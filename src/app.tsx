@@ -1,4 +1,5 @@
-import { Logo } from './logo'
+import { Logo } from "./logo";
+import { evaluator } from "../motion-bee/index";
 
 export function App() {
   return (
@@ -16,5 +17,5 @@ export function App() {
         </a>
       </p>
     </>
-  )
+  );
 }

@@ -1,0 +1,3 @@
+[submodule "motion-bee"]
+	path = motion-bee
+	url = git@github.com:dingyuchen/motion-bee.git
