@@ -4,23 +4,45 @@ import {
 } from "../../motion-bee/lib/types";
 
 import { useState } from "preact/hooks"
+import { JSX } from "preact";
+
+// cases left - enum 
 
 export function ModelCard(props: any) {   // need help typing these
-  console.log(props)
-  const [model, setModel] = useState(props)
+  const model = props.model  
+
+  const handleChange = (e: any) => {      // type???? 
+    console.log(e.currentTarget.name + ": " + e.currentTarget.value)
+    const newAttributes = model.attributes.slice()
+    const index = model.attributes.findIndex(((obj:Model) => obj.label === e.currentTarget.name))
+    newAttributes[index] = {...newAttributes[index], value: e.currentTarget.value}
+    // console.log({...model, attributes: newAttributes})
+    props.onChange({...model, attributes: newAttributes})
+  }
+  
+  const handleCollectionChange = (data: Model[], model: Model, label: string) => {
+    const newAttributes = model.attributes.slice()
+    
+    const index = model.attributes.findIndex((obj => obj.label === label))
+    newAttributes[index] = {...newAttributes[index], value: data}
+    props.onChange({...model, attributes: newAttributes})
+    
+    // console.log({...model, attributes: newAttributes})
+  }
+  
   const children = []
   for (let attribute of model.attributes) {
     if (attribute.type === AttributeType.Collection) {
       let childValues = { value: attribute.value }
-      children.push(<Collection {...childValues} />)
+      children.push(<Collection {...childValues} onChange={(data: Model[]) => handleCollectionChange(data, model, attribute.label)}/>)
     }
     if (attribute.type ===AttributeType.Boolean) {
       children.push(
         <div>
           <h2 className="text-lg inline">{attribute.label}</h2>
-          <select className="border-2">
-            <option>True</option>
-            <option>False</option>
+          <select className="border-2" onChange={handleChange} name={attribute.label}>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
           </select>
         </div>
       )
@@ -29,7 +51,7 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div>
           <h2 className="text-lg inline">{attribute.label}</h2>
-          <input type="number" className="border-2"/>
+          <input type="number" className="border-2" onChange={handleChange} name={attribute.label}/>
         </div>
       )
     }
@@ -53,14 +75,22 @@ export function ModelCard(props: any) {   // need help typing these
   )
 }
 
-const Collection = (props: any) => {    // what type is props ah wtf 
+const Collection = (props: any) => {    // what type is props ah wtf - AttributeType.Collection? but get err
   const children = []
+
+  const handleSubChange = (data: Model, props: any, i: number) => {
+    //  shallow copy array from props to pass up (may need refactoring)
+    const newArray = props.value.slice()
+    newArray[i] = data
+    props.onChange(newArray)
+  }
+
   for (const [i, child] of props.value.entries()) {
     children.push(
       <div className="flex">
         <div className="text-lg w-16 border-2 flex justify-center items-center">{i}</div>
         <div className="flex-1">
-          <ModelCard {...child} />
+          <ModelCard model={child} onChange={(data: any) => handleSubChange(data, props, i)}/>
         </div>
       </div>
     )

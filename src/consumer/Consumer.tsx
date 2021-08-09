@@ -41,11 +41,17 @@ export function Consumer() {
 
   const [model, setModel] = useState(groupInstance)
 
+  const handleChange = (model: Model) => {
+    setModel(model)
+    console.log("updated model:")
+    console.log(model)
+  }
+
   return (
   <>
     <div className="mt-16">
       <h1>CONSUMER VIEW</h1>
-        <ModelCard {...model}/>
+        <ModelCard model={model} onChange={handleChange}/>
     </div>
   </>
   )
