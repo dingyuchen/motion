@@ -1,5 +1,6 @@
 import { Logo } from "./logo";
 import { evaluator } from "../motion-bee/index";
+import { useState } from "preact/hooks"
 import {
   AttributeType,
   BooleanFunc,
@@ -9,6 +10,9 @@ import {
   Model,
   ModelFunc,
 } from "../motion-bee/lib/types";
+
+import { Consumer } from './consumer/Consumer'
+import { Curator } from './curator/Curator';
 
 export function App() {
   const alice: Model = {
@@ -80,21 +84,39 @@ export function App() {
     op: CollectionFunc.AllOf,
   };
 
+  const [viewMode, setViewMode] = useState("none")
+
+  const showComponent = () => {
+    switch (viewMode) {
+      case "curator":
+        return (<Curator />)
+      case "consumer":
+        return <Consumer />
+      default: return (
+        <>
+
+        </>
+      )
+    }
+  }
+
   return (
     <>
-      <Logo />
-      <p>Hello Vite + Preact!</p>
-      <p>
-        <a
-          class="link"
-          href="https://preactjs.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Is your group clear?
-        </a>
-        {JSON.stringify(evaluator(allVaccinated, groupInstance))}
-      </p>
+      <div className="App py-10 bg-gray-100">
+        <p>Is your group clear? {JSON.stringify(evaluator(allVaccinated, groupInstance))}</p>
+        <p className="mt-4">this section is temporarily here until a proper nav is created</p>
+        <div className="mx-auto mt-4 flex w-48 rounded-md border-2">
+          <div className="consumerbutton flex-1 w-16 h-10 border-r-2 border-gray-200 cursor-pointer flex items-center justify-center" onClick={() => setViewMode("curator")}>
+            Curator
+          </div>
+          <div className="consumerbutton flex-1 w-16 h-10 cursor-pointer flex items-center justify-center" onClick={() => setViewMode("consumer")}>
+            Consumer
+          </div>
+        </div>
+      </div>
+      <div>
+        {showComponent()}
+      </div>
     </>
   );
 }
