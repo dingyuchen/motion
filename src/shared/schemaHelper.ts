@@ -13,11 +13,24 @@ export function schemaLookup (schemaName: string)  {    // dummy value to simula
     name: "Person",
     attributes: [
       { label: "Age", type: AttributeType.Number },
-      { label: "Is fully vaccinated", type: AttributeType.Boolean }
+      { label: "Is fully vaccinated", type: AttributeType.Boolean },
+      { label: "Type of vaccine", type: AttributeType.Enum}, 
+      { label: "Date of vaccination", type: AttributeType.Date},
+      { label: "Children", type: AttributeType.Collection, subtype:"Person"}
+    ]
+  }
+  const insolvSchema: Schema = {
+    name: "Insolvency",
+    attributes: [
+      { label: "Debt", type: AttributeType.Number },
+      { label: "Written demand has been made to company's registered office, and the debtor has failed to pay, secure or compound the sum within 3 weeks", type: AttributeType.Boolean },
+      { label: "Judgment has been issued in favor of a creditor, which has not been fully complied with", type: AttributeType.Boolean },
+      { label: "Debtor is able to pay debt as it falls due", type: AttributeType.Boolean },
     ]
   }
   switch (schemaName) {
     case "Person": return personSchema
+    case "Insolvency": return insolvSchema
     default: return groupSchema
   }
 }

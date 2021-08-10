@@ -37,18 +37,20 @@ export function ModelCard(props: any) {   // need help typing these
       // lookup subschema based on attribute label
       const subSchemaLabel: string = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label).subtype
       const subSchema = schemaLookup(subSchemaLabel)
+      const collectionLabel = attribute.label
       
       let childValues = { value: attribute.value }
       children.push(
         <Collection {...childValues} 
         onChange={(data: Model[]) => handleCollectionChange(data, model, attribute.label)}
-        subSchema={subSchema} />)
+        subSchema={subSchema} 
+        collectionLabel={collectionLabel}/>)
     }
     if (attribute.type === AttributeType.Boolean) {
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <select className="border-2 pl-2 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
+          <select className="border-2 h-12 pl-2 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
@@ -59,15 +61,25 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <input type="number" className="border-2 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}/>
+          <input type="number" className="border-2 h-12 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}/>
         </div>
       )
     }
     if (attribute.type === AttributeType.Enum) {   // TODO
       children.push(
-        <div>
-          <h2 className="text-lg inline">{attribute.label}</h2>
-          <select></select>
+        <div className="flex mt-2">
+          <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
+          <select className="border-2 h-12 pl-4 text-lg py-2" value="PLACEHOLDER">
+            <option value="PLACEHOLDER">PLACEHOLDER</option>
+          </select>
+        </div>
+      )
+    }
+    if (attribute.type === AttributeType.Date) {
+      children.push(
+        <div className="flex mt-2">
+          <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
+          <input type="date" className="border-2 h-12 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}/>
         </div>
       )
     }
@@ -104,7 +116,7 @@ const Collection = (props: any) => {    // what type is props ah wtf - Attribute
   for (const [i, child] of props.value.entries()) {
     children.push(
       <div className="flex">
-        <div className="text-lg w-16 border-2 flex justify-center items-center">{i}</div>
+        <div className="text-lg w-16 border-2 flex justify-center items-center">{i + 1}</div>
         <div className="flex-1">
           <ModelCard model={child} onChange={(data: any) => handleSubChange(data, props, i)} schema={subSchema}/>
         </div>
@@ -114,7 +126,7 @@ const Collection = (props: any) => {    // what type is props ah wtf - Attribute
   return (
     <div className="border-2 p-4 my-4">
       <div className="mt-2">
-        <h2 className="text-lg mb-2">Collection of {props.subSchema.name}</h2>
+        <h2 className="text-lg mb-2">{props.collectionLabel} (a group consisting of multiple {props.subSchema.name})</h2>
         {children}
       </div>
       <div className="addSubModel border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
