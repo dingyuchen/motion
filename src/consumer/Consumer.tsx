@@ -15,36 +15,6 @@ export function Consumer() {
   
   // init model from provided schema 
   const initialModel: Model = modelFromSchema(schema)
-  
-  // defined model for testing purposes 
-  const charlie: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: true },
-      { label: "age", type: AttributeType.Number, value: 90 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const daniel: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: false },
-      { label: "age", type: AttributeType.Number, value: 30 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const groupInstance: Model = {
-    attributes: [
-      {
-        label: "Group",
-        type: AttributeType.Collection,
-        value: [charlie, daniel],
-      },
-      { label: "same household", type: AttributeType.Boolean, value: true },
-    ],
-    type: AttributeType.Model,
-    label: "group",
-  };
 
   const [model, setModel] = useState(initialModel)
 

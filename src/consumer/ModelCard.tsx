@@ -12,7 +12,7 @@ import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
 export function ModelCard(props: any) {   // need help typing these
   const model = props.model
   const schema = props.schema
-  console.log(schema)
+  // console.log(schema)
 
   const handleChange = (e: any) => {      // type???? 
     console.log(e.currentTarget.name + ": " + e.currentTarget.value)
@@ -46,9 +46,9 @@ export function ModelCard(props: any) {   // need help typing these
     }
     if (attribute.type === AttributeType.Boolean) {
       children.push(
-        <div>
-          <h2 className="text-lg inline">{attribute.label}</h2>
-          <select className="border-2" onChange={handleChange} name={attribute.label}>
+        <div className="flex mt-2">
+          <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
+          <select className="border-2 pl-2 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
@@ -57,9 +57,9 @@ export function ModelCard(props: any) {   // need help typing these
     }
     if (attribute.type === AttributeType.Number) {
       children.push(
-        <div>
-          <h2 className="text-lg inline">{attribute.label}</h2>
-          <input type="number" className="border-2" onChange={handleChange} name={attribute.label} />
+        <div className="flex mt-2">
+          <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
+          <input type="number" className="border-2 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}/>
         </div>
       )
     }
@@ -95,7 +95,7 @@ const Collection = (props: any) => {    // what type is props ah wtf - Attribute
   }
 
   const newSubModel = () => {
-    console.log("new submodel:")
+    console.log("new submodel")
     const newArray = props.value.slice()
     newArray.push(modelFromSchema(subSchema))
     props.onChange(newArray)
@@ -117,8 +117,9 @@ const Collection = (props: any) => {    // what type is props ah wtf - Attribute
         <h2 className="text-lg mb-2">Collection of {props.subSchema.name}</h2>
         {children}
       </div>
-      <div className="addSubModel border-2 mt-6 w-48 px-4 py-4 cursor-pointer" onClick={newSubModel}>
-        <button className="text-lg">Add new {props.subSchema.name}</button>
+      <div className="addSubModel border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
+      text-center font-semibold" onClick={newSubModel}>
+        Add new {props.subSchema.name}
       </div>
     </div>
   )
