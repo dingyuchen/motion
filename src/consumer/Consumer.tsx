@@ -1,14 +1,21 @@
 import { useState } from "preact/hooks";
 
 import {
-AttributeType,
+  Attribute,
+  AttributeType,
   Model
 } from "../../motion-bee/lib/types";
 
 import { ModelCard } from "./ModelCard";
+import { AttributeDefinition, Schema } from "../shared/types";
+import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
 
 export function Consumer() {
-
+  const schema: Schema = schemaLookup("Group")
+  
+  // init model from provided schema 
+  const initialModel: Model = modelFromSchema(schema)
+  
   // defined model for testing purposes 
   const charlie: Model = {
     attributes: [
@@ -29,7 +36,7 @@ export function Consumer() {
   const groupInstance: Model = {
     attributes: [
       {
-        label: "group",
+        label: "Group",
         type: AttributeType.Collection,
         value: [charlie, daniel],
       },
@@ -39,21 +46,21 @@ export function Consumer() {
     label: "group",
   };
 
-  const [model, setModel] = useState(groupInstance)
+  const [model, setModel] = useState(initialModel)
 
-  const handleChange = (model: Model) => {
-    setModel(model)
+  const handleChange = (newModel: Model) => {
+    setModel(newModel)
     console.log("updated model:")
-    console.log(model)
+    console.log(newModel)
   }
 
   return (
-  <>
-    <div className="mt-16">
-      <h1>CONSUMER VIEW</h1>
-        <ModelCard model={model} onChange={handleChange}/>
-    </div>
-  </>
+    <>
+      <div className="mt-16">
+        <h1>CONSUMER VIEW</h1>
+        <ModelCard model={model} onChange={handleChange} schema={schema} />
+      </div>
+    </>
   )
 }
 
