@@ -20,7 +20,7 @@ export const Curator = ({ store }: { store: StoreHandler }) => {
     }
   };
   return (
-    <div className="mt-16 border-2 border-gray-200">
+    <div className="mt-16 border-gray-200 px-24">
       <h1>CURATOR VIEW</h1>
       <div class="mx-auto mt-4 flex w-48 rounded-md border-2 bg-gray-100">
           <div

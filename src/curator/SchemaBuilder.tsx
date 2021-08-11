@@ -18,6 +18,7 @@ export const SchemaBuilder = ({
   updateHandler: (schema: Schema) => void;
 }) => {
   const [workingSchema, setWorkingSchema] = useState(schema);
+  console.log(workingSchema)
   const { attributes } = workingSchema;
   const addNewBlankAttribute = () => {
     const newAttributeList = attributes.concat(defaultNewAttrDef());
@@ -43,13 +44,15 @@ export const SchemaBuilder = ({
     }
   };
   return (
-    <div>
+    <div className="border-2 mt-12 px-12 py-8">
       <div>
-        Schema builder
-        <div>
-          <input type="text" label="Name" onInput={nameChangeHandler} />
+        <h1 className="text-2xl">Schema builder</h1>
+        <div className="mt-4">
+          <input type="text" label="Name" placeholder="Name of schema" value={workingSchema.name}
+          onInput={nameChangeHandler} 
+          className="border-2 text-xl py-2 px-2" />
         </div>
-        Attributes:
+        <h2 className="text-lg mt-6">Attributes:</h2>
         {attributes.map((attribute, index) => (
           <AttributeField
             attribute={attribute}
@@ -57,9 +60,17 @@ export const SchemaBuilder = ({
             onChangeCallback={onChangeCallback(index)}
           />
         ))}
-        <button onClick={addNewBlankAttribute}>Add new attribute</button>
+        <div className="mt-2">
+          <button onClick={addNewBlankAttribute} className="border-2 mt-4 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white>
+                text-center font-semibold">Add new attribute</button>
+        </div>
       </div>
-      <button onClick={() => updateHandler(workingSchema)}>Done</button>
+      <div>
+        <button onClick={() => updateHandler(workingSchema)} className="border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
+        text-center font-semibold">SAVE</button>
+        <button onClick={() => updateHandler(schema)} className="border-2 mt-6 ml-4 w-max px-4 py-4 cursor-pointer hover:bg-red-600 hover:text-white
+        text-center font-semibold">EXIT WITHOUT SAVING</button>
+      </div>
     </div>
   );
 };
@@ -89,10 +100,12 @@ const AttributeField = ({
     }
   };
   return (
-    <div>
+    <div className="border-2 mt-2 px-4 py-4">
       Attribute
-      <div>Label:</div>
-      <input placeholder={label} onInput={labelChangeHandler} />
+      <div className="flex">
+        <div className="w-48">Label:</div>
+        <input className="border-2" value={label} onInput={labelChangeHandler} />
+      </div>
       <TypeSelector
         availableTypes={availableTypes}
         type={type}
@@ -100,15 +113,15 @@ const AttributeField = ({
       />
       {(type === AttributeType.Collection ||
         type === AttributeType.Optional) && (
-        <div>
-          Subtype:
-          <TypeSelector
-            availableTypes={availableTypes}
-            type={type}
-            onChange={typeChangeHandler}
-          />
-        </div>
-      )}
+          <div>
+            Subtype:
+            <TypeSelector
+              availableTypes={availableTypes}
+              type={type}
+              onChange={typeChangeHandler}
+            />
+          </div>
+        )}
     </div>
   );
 };
@@ -128,17 +141,27 @@ const TypeSelector = ({
     }
   };
   return (
-    <>
-      <div>Type:</div>
-      <select onChange={handleChange}>
+    <div className="flex mt-2">
+      <div className="w-48">Type:</div>
+      <select onChange={handleChange} className="border-2">
         {availableTypes.map((el) => (
           <option value={el} selected={el === type}>
             {typeToDisplay(el)}
           </option>
         ))}
       </select>
-    </>
+    </div>
   );
 };
 
-const typeToDisplay = (type: AttributeType | string) => type; // TODO
+const typeToDisplay = (type: AttributeType | string) => {
+  switch (type) {
+    case AttributeType.Boolean: return "Yes / No"
+    case AttributeType.Date: return "Date"
+    case AttributeType.Enum: return "Option list"
+    case AttributeType.Number: return "Number"
+    case AttributeType.Collection: return "Group of other Schema(s)"
+    case AttributeType.Model: return "Model"
+    default: return type
+  }
+}; // TODO
