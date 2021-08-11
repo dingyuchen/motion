@@ -10,6 +10,7 @@ import { ModelCard } from "./ModelCard";
 import { ConsumerEdit } from "./ConsumerEdit";
 import { AttributeDefinition, Schema } from "../shared/types";
 import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
+import { StoreHandler } from "../shared/RuleStore";
 
 enum View {
   Edit = "edit",
@@ -19,7 +20,7 @@ enum View {
 // for testing 
 const schemaList: string[] = ["Group", "Insolvency"]
 
-export function Consumer() {
+export function Consumer({ store }: { store: StoreHandler }) {
   const [schemaStr, setSchemaStr] = useState("Group")
   const schema: Schema = schemaLookup("Group")
   const [view, setView] = useState(View.Select)

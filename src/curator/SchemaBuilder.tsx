@@ -1,5 +1,5 @@
 import { ReadSyncOptions } from "fs";
-import { StateUpdater, useState } from "preact/hooks";
+import { StateUpdater, useContext, useState } from "preact/hooks";
 import { AttributeType } from "../../motion-bee/lib/types";
 import {
   AttributeDefinition,
@@ -7,6 +7,7 @@ import {
   Schema,
 } from "../shared/types";
 import { immutableReplace } from "../shared/util";
+import { subtypeContext } from "./SchemaEditor";
 
 export const SchemaBuilder = ({
   schema,
@@ -14,11 +15,10 @@ export const SchemaBuilder = ({
   schemaSpace,
 }: {
   schema: Schema;
-  schemaSpace: (AttributeType | string)[];
+  schemaSpace: (AttributeType)[];
   updateHandler: (schema: Schema) => void;
 }) => {
   const [workingSchema, setWorkingSchema] = useState(schema);
-  console.log(workingSchema)
   const { attributes } = workingSchema;
   const addNewBlankAttribute = () => {
     const newAttributeList = attributes.concat(defaultNewAttrDef());
@@ -46,11 +46,11 @@ export const SchemaBuilder = ({
   return (
     <div className="border-2 mt-12 px-12 py-8">
       <div>
-        <h1 className="text-2xl">Schema builder</h1>
+        <h1 className="text-2xl font-semibold">Schema builder</h1>
         <div className="mt-4">
           <input type="text" label="Name" placeholder="Name of schema" value={workingSchema.name}
-          onInput={nameChangeHandler} 
-          className="border-2 text-xl py-2 px-2" />
+            onInput={nameChangeHandler}
+            className="border-2 text-xl py-2 px-2" />
         </div>
         <h2 className="text-lg mt-6">Attributes:</h2>
         {attributes.map((attribute, index) => (
@@ -82,12 +82,18 @@ const AttributeField = ({
 }: {
   attribute: AttributeDefinition;
   onChangeCallback: (attribute: AttributeDefinition) => void;
-  availableTypes: (AttributeType | string)[];
+  availableTypes: (AttributeType)[];
 }) => {
   const { label, type, enumSet, subtype } = attribute;
-  const typeChangeHandler = (type: AttributeType | string) => {
+  const typeChangeHandler = (type: AttributeType) => {
     onChangeCallback({ ...attribute, type });
   };
+  const subtypeChangeHandler = (subtype: string) => {
+    onChangeCallback({ ...attribute, subtype })
+  }
+  const enumSetChangeHandler = (enumSet: string[]) => {
+    onChangeCallback({ ...attribute, enumSet })
+  }
   const labelChangeHandler = (e: Event) => {
     // FIXME: label update
     if (
@@ -111,17 +117,12 @@ const AttributeField = ({
         type={type}
         onChange={typeChangeHandler}
       />
-      {(type === AttributeType.Collection ||
-        type === AttributeType.Optional) && (
-          <div>
-            Subtype:
-            <TypeSelector
-              availableTypes={availableTypes}
-              type={type}
-              onChange={typeChangeHandler}
-            />
-          </div>
-        )}
+      {type === AttributeType.Collection &&
+        <SubtypeSelector onChange={subtypeChangeHandler} selected={attribute.subtype} />
+      }
+      {type === AttributeType.Enum &&
+        <EnumSetSelector onChange={enumSetChangeHandler} values={attribute.enumSet} />
+      }
     </div>
   );
 };
@@ -131,19 +132,19 @@ const TypeSelector = ({
   type,
   onChange,
 }: {
-  availableTypes: (AttributeType | string)[];
+  availableTypes: (AttributeType)[];
   type: AttributeType | string;
-  onChange: (type: AttributeType | string) => void;
+  onChange: (type: AttributeType) => void;
 }) => {
   const handleChange = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
-      onChange(e.currentTarget.value);
+      onChange(+e.currentTarget.value);
     }
   };
   return (
     <div className="flex mt-2">
       <div className="w-48">Type:</div>
-      <select onChange={handleChange} className="border-2">
+      <select onChange={handleChange} className="border-2" value={type}>
         {availableTypes.map((el) => (
           <option value={el} selected={el === type}>
             {typeToDisplay(el)}
@@ -154,6 +155,76 @@ const TypeSelector = ({
   );
 };
 
+const SubtypeSelector = ({
+  selected,
+  onChange
+}: {
+  selected: string | undefined
+  onChange: (type: string) => void;
+}) => {
+  const subtypeSpace = useContext(subtypeContext)
+  const handleChange = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      console.log(e.currentTarget.value);
+      onChange(e.currentTarget.value);
+    }
+  };
+  return (
+    <div className="flex mt-2">
+      <div className="w-48">Being a group of:</div>
+      <select onChange={handleChange} value={selected} className="border-2">
+        {subtypeSpace.map((x) => <option value={x}>{x}</option>)}
+      </select>
+    </div>
+  );
+};
+
+const EnumSetSelector = ({
+  values,
+  onChange
+}: {
+  values: string[] | undefined;
+  onChange: (type: string[]) => void;
+}) => {
+  console.log(values)
+  const handleChange = (i: number, e: Event) => {   // FIXME - this only runs when the input field loses focus
+    if (e.currentTarget instanceof HTMLInputElement) {
+      const newValues = values != undefined ? [...values] : [""]
+      newValues[i] = e.currentTarget.value
+      onChange(newValues);
+    }
+  };
+
+  const addOption = () => {
+    if (values) {
+      const newValues = [...values, ""]
+      onChange(newValues)
+    }
+    else {
+      const newValues = [""]
+      onChange(newValues)
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex mt-2">
+        <div className="w-48">With values:</div>
+        <div className={values ? "mr-4" : ""}>
+          {values?.map((x, i) =>
+            <div>
+              <input className="border-2" value={x} onChange={(e) => handleChange(i, e)}>{x}</input>
+            </div>)}
+        </div>
+        <div onClick={addOption}    // fix the styling on this 
+          className="border-2 h-8 px-4 cursor-pointer hover:bg-indigo-600 hover:text-white">
+          Add new option
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const typeToDisplay = (type: AttributeType | string) => {
   switch (type) {
     case AttributeType.Boolean: return "Yes / No"
@@ -162,6 +233,7 @@ const typeToDisplay = (type: AttributeType | string) => {
     case AttributeType.Number: return "Number"
     case AttributeType.Collection: return "Group of other Schema(s)"
     case AttributeType.Model: return "Model"
+    case AttributeType.Optional: return "Optional value"
     default: return type
   }
 }; // TODO

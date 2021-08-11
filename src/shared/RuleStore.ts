@@ -24,6 +24,12 @@ export class StoreHandler {
     this.setFn({ ...this.ruleStore, schemata });
   };
 
+  // deleteSchema = (index: number) => {
+  //   let schemata = this.ruleStore.schemata.slice();
+  //   schemata.splice(index)
+  //   this.setFn({...this.ruleStore, schemata})
+  // }
+
   // getSchema = (schemaName: string) => {
   //   const res = this.ruleStore.schemata.filter(
   //     (schema) => schema.name === schemaName
