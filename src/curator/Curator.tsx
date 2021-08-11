@@ -16,7 +16,7 @@ export const Curator = ({ store }: { store: StoreHandler }) => {
       case View.Schema:
         return <SchemaEditor store={store} />;
       case View.Ruleset:
-        return <RulesetEditor />;
+        return <RulesetEditor store={store}/>;
     }
   };
   return (

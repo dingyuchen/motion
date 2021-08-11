@@ -12,6 +12,7 @@ export function App() {
   const [view, setView] = useState(View.Consumer);
   const [ruleStore, setRuleStore] = useState(blankRuleStore());
   const storeHandler = new StoreHandler(ruleStore, setRuleStore);
+  
   const showComponent = (viewMode: View) => {
     switch (viewMode) {
       case View.Curator:
