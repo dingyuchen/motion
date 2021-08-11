@@ -75,10 +75,18 @@ const AttributeField = ({
 }) => {
   const { label, type, enumSet, subtype } = attribute;
   const typeChangeHandler = (type: AttributeType | string) => {
-    onChangeCallback({ ...attribute, type });
+    let { subtype } = attribute;
+    if (
+      !(type === AttributeType.Collection || type === AttributeType.Optional)
+    ) {
+      subtype = undefined;
+    }
+    onChangeCallback({ ...attribute, type, subtype });
+  };
+  const subTypeChangeHandler = (subtype: AttributeType | string) => {
+    onChangeCallback({ ...attribute, subtype });
   };
   const labelChangeHandler = (e: Event) => {
-    // FIXME: label update
     if (
       e instanceof InputEvent &&
       e.currentTarget instanceof HTMLInputElement
@@ -105,7 +113,7 @@ const AttributeField = ({
           <TypeSelector
             availableTypes={availableTypes}
             type={type}
-            onChange={typeChangeHandler}
+            onChange={subTypeChangeHandler}
           />
         </div>
       )}
