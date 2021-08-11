@@ -13,6 +13,7 @@ export class StoreHandler {
     this.ruleStore = curr;
   }
 
+  // not used
   addSchema = (schema: Schema) => {
     const schemata = this.ruleStore.schemata.concat(schema);
     this.setFn({ ...this.ruleStore, schemata });
@@ -22,6 +23,12 @@ export class StoreHandler {
     let schemata = this.ruleStore.schemata.slice();
     schemata[index] = schema;
     this.setFn({ ...this.ruleStore, schemata });
+  };
+
+  editRuleSet = (index: number, ruleSet: RuleSet) => {
+    let ruleSets = this.ruleStore.ruleSets.slice();
+    ruleSets[index] = ruleSet;
+    this.setFn({ ...this.ruleStore, ruleSets });
   };
 
   // getSchema = (schemaName: string) => {
@@ -36,6 +43,10 @@ export class StoreHandler {
 
   get getSchemata() {
     return this.ruleStore.schemata;
+  }
+
+  get getRuleSets() {
+    return this.ruleStore.ruleSets;
   }
 }
 
