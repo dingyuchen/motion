@@ -1,7 +1,7 @@
 import { RuleSet, Schema } from "./types";
 
 export interface RuleStore {
-  schemata: Schema[];
+  schemata: { [label: string]: Schema };
   ruleSets: RuleSet[];
 }
 
@@ -14,9 +14,12 @@ export class StoreHandler {
   }
 
   addSchema = (schema: Schema) => {
-    const schemata = this.ruleStore.schemata.concat(schema);
+    const schemata = { ...this.ruleStore.schemata };
+    schemata[schema.name] = schema;
     this.setFn({ ...this.ruleStore, schemata });
   };
+
+  getSchema = (schemaName: string) => this.ruleStore.schemata[schemaName];
 }
 
-export const blankRuleStore = (): RuleStore => ({ schemata: [], ruleSets: [] });
+export const blankRuleStore = (): RuleStore => ({ schemata: {}, ruleSets: [] });
