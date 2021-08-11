@@ -9,7 +9,7 @@ export const blankSchema = (): Schema => ({ name: "", attributes: [] });
 
 export interface AttributeDefinition {
   label: string;
-  type: AttributeType;
+  type: AttributeType | string;
   subtype?: string;
   enumSet?: string[];
 }
