@@ -1,100 +1,45 @@
-import { Logo } from "./logo";
-import { evaluator } from "../motion-bee/index";
-import {
-  AttributeType,
-  BooleanFunc,
-  CollectionFunc,
-  Expression,
-  IdentityFunc,
-  Model,
-  ModelFunc,
-} from "../motion-bee/lib/types";
+import { useState } from "preact/hooks";
+import { Consumer } from "./consumer/Consumer";
+import { Curator } from "./curator/Curator";
+import { blankRuleStore, RuleStore, StoreHandler } from "./shared/RuleStore";
+
+enum View {
+  Curator = "curator",
+  Consumer = "consumer",
+}
 
 export function App() {
-  const alice: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: true },
-      { label: "age", type: AttributeType.Number, value: 20 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const bob: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: false },
-      { label: "age", type: AttributeType.Number, value: 11 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const charlie: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: true },
-      { label: "age", type: AttributeType.Number, value: 90 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const daniel: Model = {
-    attributes: [
-      { label: "vaccinated", type: AttributeType.Boolean, value: false },
-      { label: "age", type: AttributeType.Number, value: 30 },
-    ],
-    type: AttributeType.Model,
-    label: "person",
-  };
-  const groupInstance: Model = {
-    attributes: [
-      {
-        label: "group",
-        type: AttributeType.Collection,
-        value: [alice, bob, charlie, daniel],
-      },
-      { label: "same household", type: AttributeType.Boolean, value: true },
-    ],
-    type: AttributeType.Model,
-    label: "group",
-  };
-
-  const isVaccinated: Expression = {
-    args: [
-      {
-        args: ["vaccinated"],
-        op: ModelFunc.Lookup,
-      },
-    ],
-    op: BooleanFunc.IsChecked,
-  };
-
-  const allVaccinated: Expression = {
-    args: [
-      {
-        args: ["group"],
-        op: ModelFunc.Lookup,
-      },
-      {
-        args: [isVaccinated],
-        op: IdentityFunc.Lambda,
-      },
-    ],
-    op: CollectionFunc.AllOf,
+  const [view, setView] = useState(View.Consumer);
+  const [ruleStore, setRuleStore] = useState(blankRuleStore());
+  const storeHandler = new StoreHandler(ruleStore, setRuleStore);
+  const showComponent = (viewMode: View) => {
+    switch (viewMode) {
+      case View.Curator:
+        return <Curator store={storeHandler} />;
+      case View.Consumer:
+        return <Consumer />;
+    }
   };
 
   return (
     <>
-      <Logo />
-      <p>Hello Vite + Preact!</p>
-      <p>
-        <a
-          class="link"
-          href="https://preactjs.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Is your group clear?
-        </a>
-        {JSON.stringify(evaluator(allVaccinated, groupInstance))}
-      </p>
+      <div class="App py-10 bg-gray-100">
+        <div class="mx-auto mt-4 flex w-48 rounded-md border-2">
+          <div
+            class="consumerbutton flex-1 w-16 h-10 border-r-2 border-gray-200 cursor-pointer flex items-center justify-center"
+            onClick={() => setView(View.Curator)}
+          >
+            Curator
+          </div>
+          <div
+            class="consumerbutton flex-1 w-16 h-10 cursor-pointer flex items-center justify-center"
+            onClick={() => setView(View.Consumer)}
+          >
+            Consumer
+          </div>
+        </div>
+      </div>
+      <div>{showComponent(view)}</div>
     </>
   );
 }
