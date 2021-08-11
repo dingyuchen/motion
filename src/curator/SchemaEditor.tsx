@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { defaultTypes } from "../../motion-bee/lib/types";
 import { StoreHandler } from "../shared/RuleStore";
 import { blankSchema, Schema } from "../shared/types";
 import { SchemaBuilder } from "./SchemaBuilder";
@@ -10,6 +11,7 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
     store.addSchema(schema);
     setOpenEditor(false);
   };
+  const schemaSpace = [...defaultTypes, ...Object.keys(store.getSchemata)];
   return (
     <>
       <div>Schema editor</div>
@@ -21,7 +23,11 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
       ))}
       <button onClick={() => setOpenEditor(true)}>Add new Schema</button>
       {openEditor && (
-        <SchemaBuilder schema={selectedSchema} updateHandler={updateFn} />
+        <SchemaBuilder
+          schema={selectedSchema}
+          schemaSpace={schemaSpace}
+          updateHandler={updateFn} // FIXME
+        />
       )}
     </>
   );

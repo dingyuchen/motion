@@ -20,6 +20,9 @@ export class StoreHandler {
   };
 
   getSchema = (schemaName: string) => this.ruleStore.schemata[schemaName];
+  get getSchemata() {
+    return this.ruleStore.schemata;
+  }
 }
 
 export const blankRuleStore = (): RuleStore => ({ schemata: {}, ruleSets: [] });
