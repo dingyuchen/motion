@@ -5,11 +5,19 @@ export interface Schema {
   attributes: AttributeDefinition[];
 }
 
+export const blankSchema = (): Schema => ({ name: "", attributes: [] });
+
 export interface AttributeDefinition {
   label: string;
   type: AttributeType;
   subtype?: string;
+  enumSet?: string[];
 }
+
+export const defaultNewAttrDef = (): AttributeDefinition => ({
+  label: "",
+  type: AttributeType.Boolean,
+});
 
 export interface RuleSet {
   title: string;
@@ -18,5 +26,5 @@ export interface RuleSet {
 
 export interface Rule {
   expr: Expression;
-  input: Schema;
+  input: Schema; // corresponding schema for a rule
 }
