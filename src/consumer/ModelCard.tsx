@@ -6,13 +6,12 @@ import { Schema, AttributeDefinition } from "../shared/types";
 
 import { useState } from "preact/hooks"
 import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
-
-// TODO - enum 
+import { JSX } from "preact";
 
 export function ModelCard(props: any) {   // need help typing these
   const model = props.model
   const schema = props.schema
-  // console.log(schema)
+  // console.log(model)
 
   const handleChange = (e: any) => {      // type???? 
     console.log(e.currentTarget.name + ": " + e.currentTarget.value)
@@ -65,12 +64,14 @@ export function ModelCard(props: any) {   // need help typing these
         </div>
       )
     }
-    if (attribute.type === AttributeType.Enum) {   // TODO
+    if (attribute.type === AttributeType.Enum) { 
+      const enumSet = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label).enumSet
+      const enumOptions = enumSet.map((option: string) => <option value={option}>{option}</option>)
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <select className="border-2 h-12 pl-4 text-lg py-2" value="PLACEHOLDER">
-            <option value="PLACEHOLDER">PLACEHOLDER</option>
+          <select className="border-2 h-12 pl-4 text-lg py-2" value={attribute.value} onChange={handleChange} name={attribute.label}>
+            {enumOptions}
           </select>
         </div>
       )

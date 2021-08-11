@@ -14,7 +14,7 @@ export function schemaLookup (schemaName: string)  {    // dummy value to simula
     attributes: [
       { label: "Age", type: AttributeType.Number },
       { label: "Is fully vaccinated", type: AttributeType.Boolean },
-      { label: "Type of vaccine", type: AttributeType.Enum}, 
+      { label: "Type of vaccine", type: AttributeType.Enum, enumSet:["Pfizer", "Moderna", "Sinovac", "Other"]}, 
       { label: "Date of vaccination", type: AttributeType.Date},
       { label: "Children", type: AttributeType.Collection, subtype:"Person"}
     ]
