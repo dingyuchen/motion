@@ -94,6 +94,9 @@ const AttributeField = ({
   const enumSetChangeHandler = (enumSet: string[]) => {
     onChangeCallback({ ...attribute, enumSet })
   }
+  // const modelSubtypeChangeHandler = (subtype: string) => {
+  //   onChangeCallback({ ...attribute, type: AttributeType.Model, subtype: subtype})
+  // }
   const labelChangeHandler = (e: Event) => {
     // FIXME: label update
     if (
@@ -133,9 +136,11 @@ const TypeSelector = ({
   onChange,
 }: {
   availableTypes: (AttributeType)[];
-  type: AttributeType | string;
+  type: AttributeType;
   onChange: (type: AttributeType) => void;
 }) => {
+
+  const subtypeSpace = useContext(subtypeContext)
   const handleChange = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       onChange(+e.currentTarget.value);
@@ -150,6 +155,13 @@ const TypeSelector = ({
             {typeToDisplay(el)}
           </option>
         ))}
+        {/* {
+          subtypeSpace.map((st) => (  //  FIXME: selected property not working
+            <option value={st} selected={st === subtype}>
+              bla
+            </option>
+          ))
+        } */}
       </select>
     </div>
   );
@@ -230,7 +242,7 @@ const typeToDisplay = (type: AttributeType | string) => {
     case AttributeType.Enum: return "Option list"
     case AttributeType.Number: return "Number"
     case AttributeType.Collection: return "Group of other Schema(s)"
-    case AttributeType.Model: return "Model"
+    // case AttributeType.Model: return "Model"
     case AttributeType.Optional: return "Optional value"
     default: return type
   }
