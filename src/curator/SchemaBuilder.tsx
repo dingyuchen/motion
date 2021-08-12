@@ -100,7 +100,7 @@ const AttributeField = ({
       e instanceof InputEvent &&
       e.currentTarget instanceof HTMLInputElement
     ) {
-      console.log(e.currentTarget.value);
+      // g(e.currentTarget.value);
       const label = e.currentTarget.value;
       onChangeCallback({ ...attribute, label });
     }
@@ -165,7 +165,6 @@ const SubtypeSelector = ({
   const subtypeSpace = useContext(subtypeContext)
   const handleChange = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
-      console.log(e.currentTarget.value);
       onChange(e.currentTarget.value);
     }
   };
@@ -186,8 +185,7 @@ const EnumSetSelector = ({
   values: string[] | undefined;
   onChange: (type: string[]) => void;
 }) => {
-  console.log(values)
-  const handleChange = (i: number, e: Event) => {   // FIXME - this only runs when the input field loses focus
+  const handleChange = (i: number, e: Event) => {
     if (e.currentTarget instanceof HTMLInputElement) {
       const newValues = values != undefined ? [...values] : [""]
       newValues[i] = e.currentTarget.value
@@ -213,7 +211,7 @@ const EnumSetSelector = ({
         <div className={values ? "mr-4" : ""}>
           {values?.map((x, i) =>
             <div>
-              <input className="border-2" value={x} onChange={(e) => handleChange(i, e)}>{x}</input>
+              <input className="border-2" value={x} onInput={(e) => handleChange(i, e)}>{x}</input>
             </div>)}
         </div>
         <div onClick={addOption}    // fix the styling on this 
