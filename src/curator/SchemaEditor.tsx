@@ -1,8 +1,11 @@
+import { createContext } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { defaultTypes } from "../../motion-bee/lib/types";
 import { StoreHandler } from "../shared/RuleStore";
 import { blankSchema, Schema } from "../shared/types";
 import { SchemaBuilder } from "./SchemaBuilder";
+
+export const subtypeContext = createContext([""]);
 
 export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
   const [selectedSchema, setSelectedSchema] = useState({
@@ -21,27 +24,37 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
     setOpenEditor(true);
     setSelectedSchema({ index, ...store.getSchemata[index] });
   };
-  const schemaSpace = [
-    ...defaultTypes,
-    ...store.getSchemata.map((schema) => schema.name),
-  ];
+
+  const schemaSpace = [...defaultTypes]
+  
   const { index } = selectedSchema;
   return (
     <>
-      <div>Schema editor</div>
-      <div>All models:</div>
-      {store.getSchemata.map((schema, index) => (
-        <div onClick={() => editHandler(index)}>{JSON.stringify(schema)}</div>
-      ))}
+      <div className="border-2 mt-4 p-4">
+        <h1 className="font-semibold text-xl">All schemata (click each one to edit):</h1>
+        {store.getSchemata.length === 0 ?
+          <div className="mt-4">No schemata yet! Press "Add new Schema" below to create your first schema.</div>
+          :
+          store.getSchemata.map((schema, index) => (
+            <div onClick={() => editHandler(index)} className="border-2 mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100">
+              <span className="w-36 text-2xl">{schema.name}</span>
+              <span className="flex-1 flex content-center">{JSON.stringify(schema)}</span>
+            </div>
+          ))}
+      </div>
       {!openEditor && (
-        <button onClick={() => setOpenEditor(true)}>Add new Schema</button>
+        <button onClick={() => setOpenEditor(true)} className="border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
+        text-center font-semibold">Add new Schema</button>
       )}
       {openEditor && (
-        <SchemaBuilder
-          schema={selectedSchema}
-          schemaSpace={schemaSpace}
-          updateHandler={updateFn(index)}
-        />
+        <subtypeContext.Provider value={[...store.getSchemata.map((schema) => schema.name)]}>
+          <SchemaBuilder
+            schema={selectedSchema}
+            schemaSpace={schemaSpace}
+            updateHandler={updateFn(index)}
+            key={index}
+          />
+        </subtypeContext.Provider>
       )}
     </>
   );
