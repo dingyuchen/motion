@@ -1,4 +1,5 @@
 import {
+  Attribute,
   AttributeType,
   Model
 } from "../../motion-bee/lib/types";
@@ -7,18 +8,43 @@ import { Schema, AttributeDefinition } from "../shared/types";
 import { useState } from "preact/hooks"
 import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
 import { JSX } from "preact";
+import { StoreHandler } from "../shared/RuleStore";
 
-export function ModelCard(props: any) {   // need help typing these
-  const model = props.model
-  const schema = props.schema
-  // console.log(model)
+export function ModelCard({model, schema, onChange, store} : {
+  model: Model;
+  schema: Schema;
+  onChange: (newModel: Model) => void; 
+  store: StoreHandler
+}) {   // need help typing these
 
   const handleChange = (e: any) => {      // type???? 
-    console.log(e.currentTarget.name + ": " + e.currentTarget.value)
-    const newAttributes = model.attributes.slice()
-    const index = model.attributes.findIndex(((obj: Model) => obj.label === e.currentTarget.name))
+    // console.log(e.currentTarget.name + ": " + e.currentTarget.value)
+    const newAttributes = [...model.attributes]
+    const index = model.attributes.findIndex((obj: Attribute) => obj.label === e.currentTarget.name)
     newAttributes[index] = { ...newAttributes[index], value: e.currentTarget.value }
-    props.onChange({ ...model, attributes: newAttributes })
+    onChange({ ...model, attributes: newAttributes })
+  }
+
+  const handleBoolChange = (e: any) => {
+    const toBool = e.currentTarget.value === "true"
+    const newAttributes = [...model.attributes]
+    const index = model.attributes.findIndex((obj: Attribute) => obj.label === e.currentTarget.name)
+    newAttributes[index] = { ...newAttributes[index], value: toBool }
+    onChange({ ...model, attributes: newAttributes })
+  }
+
+  const handleNumberChange = (e: any) => {
+    const newAttributes = [...model.attributes]
+    const index = model.attributes.findIndex((obj: Attribute) => obj.label === e.currentTarget.name)
+    newAttributes[index] = { ...newAttributes[index], value: parseInt(e.currentTarget.value) }
+    onChange({ ...model, attributes: newAttributes })
+  }
+
+  const handleDateChange = (e: any) => {
+    const newAttributes = [...model.attributes]
+    const index = model.attributes.findIndex((obj: Attribute) => obj.label === e.currentTarget.name)
+    newAttributes[index] = { ...newAttributes[index], value: Date.parse(e.currentTarget.value) }
+    onChange({ ...model, attributes: newAttributes })
   }
 
   const handleCollectionChange = (data: Model[], model: Model, label: string) => {
@@ -26,7 +52,7 @@ export function ModelCard(props: any) {   // need help typing these
 
     const index = model.attributes.findIndex((obj => obj.label === label))
     newAttributes[index] = { ...newAttributes[index], value: data }
-    props.onChange({ ...model, attributes: newAttributes })
+    onChange({ ...model, attributes: newAttributes })
   }
 
   const children = []
@@ -34,8 +60,8 @@ export function ModelCard(props: any) {   // need help typing these
     if (attribute.type === AttributeType.Collection) {
 
       // lookup subschema based on attribute label
-      const subSchemaLabel: string = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label).subtype
-      const subSchema = schemaLookup(subSchemaLabel)
+      const subSchemaLabel = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label)!.subtype!
+      const subSchema = schemaLookup(store, subSchemaLabel)
       const collectionLabel = attribute.label
 
       let childValues = { value: attribute.value }
@@ -49,23 +75,23 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <select className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
+          <select className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleBoolChange} name={attribute.label} value={attribute.value!.toString()}>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
         </div>
       )
     }
-    if (attribute.type === AttributeType.Number) {
+    if (attribute.type === AttributeType.Number && typeof(attribute.value) === "number") {
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <input type="number" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
+          <input type="number" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleNumberChange} name={attribute.label} value={attribute.value} />
         </div>
       )
     }
-    if (attribute.type === AttributeType.Enum) {
-      const enumSet = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label).enumSet
+    if (attribute.type === AttributeType.Enum && typeof attribute.value === "string") {
+      const enumSet = schema.attributes.find((schemaAttr: AttributeDefinition) => schemaAttr.label === attribute.label)!.enumSet!
       const enumOptions = enumSet.map((option: string) => <option value={option}>{option}</option>)
       children.push(
         <div className="flex mt-2">
@@ -76,11 +102,11 @@ export function ModelCard(props: any) {   // need help typing these
         </div>
       )
     }
-    if (attribute.type === AttributeType.Date) {
+    if (attribute.type === AttributeType.Date && (typeof(attribute.value) === "string" || typeof attribute.value === "undefined")) {
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <input type="date" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
+          <input type="date" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleDateChange} name={attribute.label} value={attribute.value} />
         </div>
       )
     }
@@ -98,9 +124,8 @@ export function ModelCard(props: any) {   // need help typing these
 
 const Collection = (props: any) => {    
   const subSchema = props.subSchema
-  console.log("props value")
-  console.log(props.value)
   const children = []
+  const store = props.store
 
   const handleSubChange = (data: Model, props: any, i: number) => {
     //  shallow copy array from props to pass up (may need refactoring)
@@ -131,7 +156,7 @@ const Collection = (props: any) => {
           onClick={() => deleteSubModel(i)}>Delete</div>
         </div>
         <div className="flex-1">
-          <ModelCard model={child} onChange={(data: any) => handleSubChange(data, props, i)} schema={subSchema} />
+          <ModelCard model={child} onChange={(data: any) => handleSubChange(data, props, i)} schema={subSchema} store={store}/>
         </div>
       </div>
     )

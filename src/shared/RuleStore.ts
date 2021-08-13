@@ -45,4 +45,6 @@ export class StoreHandler {
   }
 }
 
-export const blankRuleStore = (): RuleStore => ({ schemata: [], ruleSets: [] });
+import { testRuleStore,  } from "./schemaHelper";
+// export const blankRuleStore = (): RuleStore => ({ schemata: [], ruleSets: [] });
+export const blankRuleStore = (): RuleStore => (testRuleStore);
