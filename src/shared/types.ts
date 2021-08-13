@@ -1,9 +1,4 @@
-import {
-  AttributeType,
-  Expression,
-  IdentityFunc,
-  LogicalFunc,
-} from "../../motion-bee/lib/types";
+import { AttributeType, Expression, IdentityFunc, LogicalFunc } from "../../motion-bee/lib/types";
 
 export interface Schema {
   name: string;

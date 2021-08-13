@@ -13,7 +13,5 @@ export const junction = (op: LogicalFunc, exprs: Expression[]): Expression => {
   return { op, args: [junction(op, left), junction(op, right)] };
 };
 
-export const conjunction = (exprs: Expression[]) =>
-  junction(LogicalFunc.And, exprs);
-export const disjunction = (exprs: Expression[]) =>
-  junction(LogicalFunc.Or, exprs);
+export const conjunction = (exprs: Expression[]) => junction(LogicalFunc.And, exprs);
+export const disjunction = (exprs: Expression[]) => junction(LogicalFunc.Or, exprs);

@@ -50,9 +50,7 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
           Add new Schema
         </button>
       )}
-      {openEditor && (
-        <SchemaBuilder schema={selectedSchema} updateHandler={updateFn(index)} key={index} />
-      )}
+      {openEditor && <SchemaBuilder schema={selectedSchema} updateHandler={updateFn(index)} key={index} />}
     </>
   );
 };

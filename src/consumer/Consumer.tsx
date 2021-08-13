@@ -1,10 +1,6 @@
 import { useState } from "preact/hooks";
 
-import {
-  Attribute,
-  AttributeType,
-  Model
-} from "../../motion-bee/lib/types";
+import { Attribute, AttributeType, Model } from "../../motion-bee/lib/types";
 
 import { ModelCard } from "./ModelCard";
 import { ConsumerEdit } from "./ConsumerEdit";
@@ -17,55 +13,51 @@ enum View {
   Select = "select",
 }
 
-// for testing 
-const schemaList: string[] = ["Group", "Insolvency"]
+// for testing
+const schemaList: string[] = ["Group", "Insolvency"];
 
 export function Consumer({ store }: { store: StoreHandler }) {
-  const [schemaStr, setSchemaStr] = useState("Group")
-  const schema: Schema = schemaLookup("Group")
-  const [view, setView] = useState(View.Select)
+  const [schemaStr, setSchemaStr] = useState("Group");
+  const schema: Schema = schemaLookup("Group");
+  const [view, setView] = useState(View.Select);
 
   const handleSchemaChange = (schemaOption: string) => {
-    setSchemaStr(schemaOption)
-    setView(View.Edit)
-  }
+    setSchemaStr(schemaOption);
+    setView(View.Edit);
+  };
 
   const handleReturnToView = () => {
-    setView(View.Select)
-  }
+    setView(View.Select);
+  };
 
-  const showComponent = (viewMode: View, handleClick: ((s: string) => void)) => { 
+  const showComponent = (viewMode: View, handleClick: (s: string) => void) => {
     switch (viewMode) {
       case View.Edit:
-        return <ConsumerEdit schemaStr={schemaStr} handleBack={handleReturnToView}/>;
+        return <ConsumerEdit schemaStr={schemaStr} handleBack={handleReturnToView} />;
       case View.Select:
-        const schemaDivs = []
-        for (let schemaOption of schemaList) {    // TEMPORARY - REDO THIS WHEN SCHEMA STORE IS IMPLEMENTED
+        const schemaDivs = [];
+        for (let schemaOption of schemaList) {
+          // TEMPORARY - REDO THIS WHEN SCHEMA STORE IS IMPLEMENTED
           schemaDivs.push(
-            <div className="w-72 flex border-2 py-12 justify-center content-evenly text-2xl cursor-pointer hover:bg-indigo-600 hover:text-white"
-            name={schemaOption}
-            onClick={() => handleClick(schemaOption)}>
+            <div
+              className="w-72 flex border-2 py-12 justify-center content-evenly text-2xl cursor-pointer hover:bg-indigo-600 hover:text-white"
+              name={schemaOption}
+              onClick={() => handleClick(schemaOption)}
+            >
               {schemaOption}
             </div>
-          )
+          );
         }
         return (
           <>
             <h1 class="text-2xl border-gray-300 text-gray-900 mt-16">Select a situation to get started.</h1>
-            <div class="w-11/12 mt-16 bg-white p-4 ml-1 border-2 flex justify-evenly">
-              {schemaDivs}
-            </div>
+            <div class="w-11/12 mt-16 bg-white p-4 ml-1 border-2 flex justify-evenly">{schemaDivs}</div>
           </>
         );
     }
   };
-  // init model from provided schema 
-  const initialModel: Model = modelFromSchema(schema)
+  // init model from provided schema
+  const initialModel: Model = modelFromSchema(schema);
 
-  return (
-    <div className="px-24">
-      {showComponent(view, handleSchemaChange)}
-    </div>
-  )
+  return <div className="px-24">{showComponent(view, handleSchemaChange)}</div>;
 }
-
