@@ -1,21 +1,14 @@
-import { ReadSyncOptions } from "fs";
 import { StateUpdater, useContext, useState } from "preact/hooks";
-import { AttributeType } from "../../motion-bee/lib/types";
-import {
-  AttributeDefinition,
-  defaultNewAttrDef,
-  Schema,
-} from "../shared/types";
+import { AttributeType, defaultTypes } from "../../motion-bee/lib/types";
+import { RuleStoreContext } from "../app";
+import { AttributeDefinition, defaultNewAttrDef, Schema } from "../shared/types";
 import { immutableReplace } from "../shared/util";
-import { subtypeContext } from "./SchemaEditor";
 
 export const SchemaBuilder = ({
   schema,
   updateHandler,
-  schemaSpace,
 }: {
   schema: Schema;
-  schemaSpace: AttributeType[];
   updateHandler: (schema: Schema) => void;
 }) => {
   const [workingSchema, setWorkingSchema] = useState(schema);
@@ -24,21 +17,26 @@ export const SchemaBuilder = ({
     const newAttributeList = attributes.concat(defaultNewAttrDef());
     setWorkingSchema((prev) => ({ ...prev, attributes: newAttributeList }));
   };
-  const onChangeCallback =
-    (index: number) => (attribute: AttributeDefinition) => {
-      setWorkingSchema((prev) => {
-        const { attributes } = prev;
-        return {
-          ...prev,
-          attributes: immutableReplace(attributes, index, attribute),
-        };
-      });
-    };
+  const onChange = (index: number) => (attribute: AttributeDefinition) => {
+    setWorkingSchema((prev) => {
+      const { attributes } = prev;
+      return {
+        ...prev,
+        attributes: immutableReplace(attributes, index, attribute),
+      };
+    });
+  };
+  const onDelete = (index: number) => {
+    setWorkingSchema((prev) => {
+      const { attributes } = prev;
+      return {
+        ...prev,
+        attributes: attributes.splice(index, 1),
+      };
+    });
+  };
   const nameChangeHandler = (e: Event) => {
-    if (
-      e instanceof InputEvent &&
-      e.currentTarget instanceof HTMLInputElement
-    ) {
+    if (e instanceof InputEvent && e.currentTarget instanceof HTMLInputElement) {
       const name = e.currentTarget.value;
       setWorkingSchema((prev) => ({ ...prev, name }));
     }
@@ -59,11 +57,7 @@ export const SchemaBuilder = ({
         </div>
         <h2 className="text-lg mt-6">Attributes:</h2>
         {attributes.map((attribute, index) => (
-          <AttributeField
-            attribute={attribute}
-            availableTypes={schemaSpace}
-            onChangeCallback={onChangeCallback(index)}
-          />
+          <AttributeField attribute={attribute} onChange={onChange(index)} onDelete={() => onDelete(index)} />
         ))}
         <div className="mt-2">
           <button
@@ -97,34 +91,31 @@ export const SchemaBuilder = ({
 
 const AttributeField = ({
   attribute,
-  onChangeCallback,
-  availableTypes,
+  onChange,
+  onDelete,
 }: {
   attribute: AttributeDefinition;
-  onChangeCallback: (attribute: AttributeDefinition) => void;
-  availableTypes: AttributeType[];
+  onChange: (attribute: AttributeDefinition) => void;
+  onDelete: () => void;
 }) => {
   const { label, type, enumSet, subtype } = attribute;
   const typeChangeHandler = (type: AttributeType) => {
-    onChangeCallback({ ...attribute, type });
+    onChange({ ...attribute, type });
   };
   const subtypeChangeHandler = (subtype: string) => {
-    onChangeCallback({ ...attribute, subtype });
+    onChange({ ...attribute, subtype });
   };
   const enumSetChangeHandler = (enumSet: string[]) => {
-    onChangeCallback({ ...attribute, enumSet });
+    onChange({ ...attribute, enumSet });
   };
   // const modelSubtypeChangeHandler = (subtype: string) => {
   //   onChangeCallback({ ...attribute, type: AttributeType.Model, subtype: subtype})
   // }
   const labelChangeHandler = (e: Event) => {
-    if (
-      e instanceof InputEvent &&
-      e.currentTarget instanceof HTMLInputElement
-    ) {
+    if (e instanceof InputEvent && e.currentTarget instanceof HTMLInputElement) {
       // g(e.currentTarget.value);
       const label = e.currentTarget.value;
-      onChangeCallback({ ...attribute, label });
+      onChange({ ...attribute, label });
     }
   };
   return (
@@ -132,29 +123,14 @@ const AttributeField = ({
       Attribute
       <div className="flex">
         <div className="w-48">Label:</div>
-        <input
-          className="border-2"
-          value={label}
-          onInput={labelChangeHandler}
-        />
+        <input className="border-2" value={label} onInput={labelChangeHandler} />
       </div>
-      <TypeSelector
-        availableTypes={availableTypes}
-        type={type}
-        onChange={typeChangeHandler}
-      />
+      <TypeSelector availableTypes={defaultTypes} type={type} onChange={typeChangeHandler} />
       {type === AttributeType.Collection && (
-        <SubtypeSelector
-          onChange={subtypeChangeHandler}
-          selected={attribute.subtype}
-        />
+        <SubtypeSelector onChange={subtypeChangeHandler} selected={attribute.subtype} />
       )}
-      {type === AttributeType.Enum && (
-        <EnumSetSelector
-          onChange={enumSetChangeHandler}
-          values={attribute.enumSet}
-        />
-      )}
+      {type === AttributeType.Enum && <EnumSetSelector onChange={enumSetChangeHandler} values={attribute.enumSet} />}
+      <button onClick={onDelete}>Delete Attribute</button>
     </div>
   );
 };
@@ -168,7 +144,6 @@ const TypeSelector = ({
   type: AttributeType;
   onChange: (type: AttributeType) => void;
 }) => {
-  const subtypeSpace = useContext(subtypeContext);
   const handleChange = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       onChange(+e.currentTarget.value);
@@ -202,7 +177,7 @@ const SubtypeSelector = ({
   selected: string | undefined;
   onChange: (type: string) => void;
 }) => {
-  const subtypeSpace = useContext(subtypeContext);
+  const schemaSpace = useContext(RuleStoreContext).getSchemata;
   const handleChange = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       onChange(e.currentTarget.value);
@@ -212,9 +187,11 @@ const SubtypeSelector = ({
     <div className="flex mt-2">
       <div className="w-48">Being a group of:</div>
       <select onChange={handleChange} value={selected} className="border-2">
-        {subtypeSpace.map((x) => (
-          <option value={x}>{x}</option>
-        ))}
+        {schemaSpace
+          .map((schema) => schema.name)
+          .map((x) => (
+            <option value={x}>{x}</option>
+          ))}
       </select>
     </div>
   );
@@ -229,7 +206,7 @@ const EnumSetSelector = ({
 }) => {
   const handleChange = (i: number, e: Event) => {
     if (e.currentTarget instanceof HTMLInputElement) {
-      const newValues = values != undefined ? [...values] : [""];
+      const newValues = values !== undefined ? [...values] : [""];
       newValues[i] = e.currentTarget.value;
       onChange(newValues);
     }
@@ -252,11 +229,7 @@ const EnumSetSelector = ({
         <div className={values ? "mr-4" : ""}>
           {values?.map((x, i) => (
             <div>
-              <input
-                className="border-2"
-                value={x}
-                onInput={(e) => handleChange(i, e)}
-              >
+              <input className="border-2" value={x} onInput={(e) => handleChange(i, e)}>
                 {x}
               </input>
             </div>

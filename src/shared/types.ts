@@ -27,6 +27,7 @@ export const defaultNewAttrDef = (): AttributeDefinition => ({
 export interface RuleSet {
   title: string;
   rules: Rule[];
+  expression: Expression;
 }
 
 export interface Rule {
@@ -36,12 +37,13 @@ export interface Rule {
 
 export const blankExpression = (): Expression => ({
   args: [],
-  op: LogicalFunc.And,
+  op: LogicalFunc.Or,
 });
 
 export const blankRuleSet = (): RuleSet => ({
   rules: [],
   title: "",
+  expression: blankExpression(),
 });
 
 export const blankRule = (): Rule => ({

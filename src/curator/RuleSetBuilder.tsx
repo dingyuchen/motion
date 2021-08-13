@@ -1,14 +1,6 @@
 import { StateUpdater, useState } from "preact/hooks";
 import { AttributeType } from "../../motion-bee/lib/types";
-import {
-  AttributeDefinition,
-  blankRule,
-  blankRuleSet,
-  defaultNewAttrDef,
-  Rule,
-  RuleSet,
-  Schema,
-} from "../shared/types";
+import { blankRule, Rule, RuleSet, Schema } from "../shared/types";
 import { immutableReplace } from "../shared/util";
 import { RuleBuilder } from "./RuleBuilder";
 
@@ -27,7 +19,7 @@ export const RuleSetBuilder = ({
     const newRules = rules.concat(blankRule());
     setWorkingRuleSet((prev) => ({ ...prev, rules: newRules }));
   };
-  const onChangeCallback = (index: number) => (rule: Rule) => {
+  const ruleUpdateHandler = (index: number) => (rule: Rule) => {
     setWorkingRuleSet((prev) => {
       const { rules } = prev;
       return {
@@ -45,6 +37,7 @@ export const RuleSetBuilder = ({
       setWorkingRuleSet((prev) => ({ ...prev, title }));
     }
   };
+
   return (
     <div>
       <div>
@@ -52,9 +45,14 @@ export const RuleSetBuilder = ({
         <div>
           <input type="text" label={title} onInput={nameChangeHandler} />
         </div>
-        Rules:
+        Rules (disjunctive):
         {rules.map((rule, index) => (
-          <RuleBuilder rule={rule} index={index} />
+          <RuleBuilder
+            rule={rule}
+            index={index}
+            schemata={schemata}
+            ruleUpdateHandler={ruleUpdateHandler(index)}
+          />
         ))}
         <button onClick={addNewBlankRule}>Add new rule</button>
       </div>

@@ -1,3 +1,4 @@
+import { createContext } from "preact";
 import { useState } from "preact/hooks";
 import { Consumer } from "./consumer/Consumer";
 import { Curator } from "./curator/Curator";
@@ -8,17 +9,19 @@ enum View {
   Consumer = "consumer",
 }
 
+export const RuleStoreContext = createContext(new StoreHandler(blankRuleStore(), () => {}));
+
 export function App() {
   const [view, setView] = useState(View.Consumer);
   const [ruleStore, setRuleStore] = useState(blankRuleStore());
   const storeHandler = new StoreHandler(ruleStore, setRuleStore);
-  
+
   const showComponent = (viewMode: View) => {
     switch (viewMode) {
       case View.Curator:
         return <Curator store={storeHandler} />;
       case View.Consumer:
-        return <Consumer store={storeHandler}/>;
+        return <Consumer store={storeHandler} />;
     }
   };
 
@@ -42,7 +45,7 @@ export function App() {
           </div>
         </div>
       </div>
-      <div>{showComponent(view)}</div>
+      <RuleStoreContext.Provider value={storeHandler}>{showComponent(view)}</RuleStoreContext.Provider>
     </>
   );
 }
