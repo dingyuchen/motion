@@ -1,12 +1,11 @@
 import { useState } from "preact/hooks";
 import { StoreHandler } from "../shared/RuleStore";
-import { RulesetEditor } from "./RulesetEditor";
 import { SchemaEditor } from "./SchemaEditor";
 import { RuleSetEditor } from "./RuleSetEditor";
 
 enum View {
   Schema = "schema",
-  Ruleset = "ruleset",
+  RuleSet = "ruleset",
 }
 
 export const Curator = ({ store }: { store: StoreHandler }) => {
@@ -16,8 +15,8 @@ export const Curator = ({ store }: { store: StoreHandler }) => {
     switch (viewMode) {
       case View.Schema:
         return <SchemaEditor store={store} />;
-      case View.Ruleset:
-        return <RulesetEditor store={store} />;
+      case View.RuleSet:
+        return <RuleSetEditor store={store} />;
     }
   };
   return (
@@ -26,17 +25,17 @@ export const Curator = ({ store }: { store: StoreHandler }) => {
       <div class="mx-auto mt-4 flex w-48 rounded-md border-2 bg-gray-100">
         <div
           class={`curatorbutton flex-1 w-16 h-10 border-r-2 border-gray-200 cursor-pointer flex items-center justify-center rounded-l-sm 
-            ${view === View.Schema ? "bg-white" : ""}`}
+            ${view === View.Schema && "bg-white"}`}
           onClick={() => setView(View.Schema)}
         >
           Schema
         </div>
         <div
           class={`consumerbutton flex-1 w-16 h-10 cursor-pointer flex items-center justify-center rounded-r-sm 
-            ${view === View.Ruleset ? "bg-white" : ""}`}
-          onClick={() => setView(View.Ruleset)}
+            ${view === View.RuleSet && "bg-white"}`}
+          onClick={() => setView(View.RuleSet)}
         >
-          Ruleset
+          RuleSet
         </div>
       </div>
       {showComponent(view)}
