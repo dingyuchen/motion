@@ -1,3 +1,4 @@
+import { AttributeType } from "../../motion-bee/lib/types";
 import { RuleSet, Schema } from "./types";
 
 export interface RuleStore {
@@ -31,15 +32,13 @@ export class StoreHandler {
     this.setFn({ ...this.ruleStore, ruleSets });
   };
 
-  // getSchema = (schemaName: string) => {
-  //   const res = this.ruleStore.schemata.filter(
-  //     (schema) => schema.name === schemaName
-  //   );
-  //   if (res.length < 1) {
-  //     throw new Error("schema not in rulestore");
-  //   }
-  //   return res[0];
-  // };
+  getSchema = (schemaName: string) => {
+    const res = this.ruleStore.schemata.filter((schema) => schema.name === schemaName);
+    if (res.length < 1) {
+      throw new Error("schema not in rulestore");
+    }
+    return res[0];
+  };
 
   get getSchemata() {
     return this.ruleStore.schemata;
@@ -50,4 +49,25 @@ export class StoreHandler {
   }
 }
 
-export const blankRuleStore = (): RuleStore => ({ schemata: [], ruleSets: [] });
+export const blankRuleStore = (): RuleStore => ({
+  schemata: [
+    {
+      name: "Gathering",
+      attributes: [
+        { label: "Group", type: AttributeType.Collection, subtype: "Person" },
+        { label: "All from same household", type: AttributeType.Boolean },
+      ],
+    },
+    {
+      name: "Person",
+      attributes: [
+        { label: "Age", type: AttributeType.Number },
+        { label: "Is fully vaccinated", type: AttributeType.Boolean },
+        { label: "Type of vaccine", type: AttributeType.Enum, enumSet: ["Pfizer", "Moderna", "Sinovac", "Other"] },
+        { label: "Date of vaccination", type: AttributeType.Date },
+        // { label: "Children", type: AttributeType.Collection, subtype:"Person"}
+      ],
+    },
+  ],
+  ruleSets: [],
+});

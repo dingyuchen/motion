@@ -1,4 +1,4 @@
-import { AttributeType, Expression, IdentityFunc, LogicalFunc } from "../../motion-bee/lib/types";
+import { AttributeType, Expr, Expression, IdentityFunc, LogicalFunc } from "../../motion-bee/lib/types";
 
 export interface Schema {
   name: string;
@@ -30,7 +30,7 @@ export interface Rule {
   input: Schema; // corresponding schema for a rule
 }
 
-export const blankExpression = (): Expression => ({
+export const blankExpression = (): Expr => ({
   args: [],
   op: LogicalFunc.Or,
 });
