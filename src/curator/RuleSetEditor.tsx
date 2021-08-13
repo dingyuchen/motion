@@ -26,20 +26,10 @@ export const RuleSetEditor = ({ store }: { store: StoreHandler }) => {
       <div>Rule Set Editor</div>
       <div>All rulesets:</div>
       {store.getRuleSets.map((ruleSet, index) => (
-        <div onClick={() => editHandler(index)}>
-          {JSON.stringify(ruleSet, null, 2)}
-        </div>
+        <div onClick={() => editHandler(index)}>{JSON.stringify(ruleSet, null, 2)}</div>
       ))}
-      {!openEditor && (
-        <button onClick={() => setOpenEditor(true)}>Add new Ruleset</button>
-      )}
-      {openEditor && (
-        <RuleSetBuilder
-          ruleSet={selectedRuleSet}
-          schemata={store.getSchemata}
-          updateHandler={updateFn(index)}
-        />
-      )}
+      {!openEditor && <button onClick={() => setOpenEditor(true)}>Add new Ruleset</button>}
+      {openEditor && <RuleSetBuilder ruleSet={selectedRuleSet} updateHandler={updateFn(index)} />}
     </>
   );
 };

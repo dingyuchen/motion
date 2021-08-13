@@ -1,22 +1,21 @@
 import { render } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 import { Attribute, AttributeType, Expr, Expression, LogicalFunc, ModelFunc, Value } from "../../motion-bee/lib/types";
-import { AttributeDefinition, Rule, Schema } from "../shared/types";
+import { RuleStoreContext } from "../app";
+import { AttributeDefinition, blankExpression, Rule, Schema } from "../shared/types";
 import { immutableReplace } from "../shared/util";
-import { junction } from "./expressionHelper";
 
 export const RuleBuilder = ({
   rule,
   index,
-  schemata,
   ruleUpdateHandler,
 }: {
   rule: Rule;
   index: number;
-  schemata: Schema[];
   ruleUpdateHandler: (_: Rule) => void;
 }) => {
   // index for displaying
+  const schemata = useContext(RuleStoreContext).getSchemata;
   const updateInputSchema = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
@@ -60,21 +59,33 @@ const JunctionExpressionBuilder = ({
   const onSubExpressionUpdate = (index: number) => (exp: Expression) => {
     if (isExpr(expr)) {
       const newExprs = immutableReplace(expr.args as Expression[], index, exp);
-      exprUpdateHandler(junction(junctionOperation, newExprs));
+      exprUpdateHandler({ op: junctionOperation, args: newExprs });
+    }
+  };
+
+  const addJunction = () => {
+    if (isExpr(expr)) {
+      const args = expr.args as Expression[];
+      const label = input.attributes[0].label;
+      const defaultLookUpExp: Expr = { args: [label], op: ModelFunc.Lookup };
+      exprUpdateHandler({ op: junctionOperation, args: args.concat(defaultLookUpExp) });
     }
   };
 
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
     <div>
-      <select onChange={junctionUpdateHandler} value={junctionOperation}>
-        {options.map((opt) => (
-          <option>{opt}</option>
-        ))}
-      </select>
+      {(expr as Expr).args.length < 2 && (
+        <select onChange={junctionUpdateHandler} value={junctionOperation}>
+          {options.map((opt) => (
+            <option>{opt}</option>
+          ))}
+        </select>
+      )}
       {(expr as Expr).args.map((subExp, index) => (
         <SchemaLookUpBuilder exprUpdateHandler={onSubExpressionUpdate(index)} schema={input} />
       ))}
+      <button onClick={addJunction}>More</button>
     </div>
   );
 };
@@ -120,12 +131,20 @@ const renderContinuation = (
   nextExpUpdateHandler: (_: Expr) => void,
   furtherLookUpHandler: (_: Expression) => void
 ) => {
+  const schemaSpace = useContext(RuleStoreContext).getSchemata;
   switch (attribute.type) {
     case AttributeType.Model:
-      return;
+      const schema = schemaSpace.filter((s) => s.name === attribute.subtype)[0];
+      return <SchemaLookUpBuilder exprUpdateHandler={furtherLookUpHandler} schema={schema} />;
+    case AttributeType.Collection:
+      return <CollectionExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
     default:
       break;
   }
+};
+
+const CollectionExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
+  return <div>Collection operations</div>;
 };
 
 const isExpr = (e: Expression): e is Expr => {
