@@ -49,7 +49,7 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <select className="border-2 h-12 pl-2 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
+          <select className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value}>
             <option value="true">Yes</option>
             <option value="false">No</option>
           </select>
@@ -60,7 +60,7 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <input type="number" className="border-2 h-12 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
+          <input type="number" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
         </div>
       )
     }
@@ -70,7 +70,7 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <select className="border-2 h-12 pl-4 text-lg py-2" value={attribute.value} onChange={handleChange} name={attribute.label}>
+          <select className="border-2 pl-2 text-sm font-semibold py-2" value={attribute.value} onChange={handleChange} name={attribute.label}>
             {enumOptions}
           </select>
         </div>
@@ -80,7 +80,7 @@ export function ModelCard(props: any) {   // need help typing these
       children.push(
         <div className="flex mt-2">
           <h2 className="text-lg inline w-1/4">{attribute.label}</h2>
-          <input type="date" className="border-2 h-12 pl-4 text-lg py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
+          <input type="date" className="border-2 pl-2 text-sm font-semibold py-2" onChange={handleChange} name={attribute.label} value={attribute.value} />
         </div>
       )
     }
@@ -88,7 +88,7 @@ export function ModelCard(props: any) {   // need help typing these
 
   return (
     <>
-      <div class="w-11/12 min-w-max bg-white p-4 ml-1 border-2">
+      <div class="w-11/12 min-w-max card border-2 p-4 ml-1">
         <h1 class="text-2xl border-gray-300 text-gray-900 text-left">{model.label}</h1>
         {children}
       </div>
@@ -125,9 +125,9 @@ const Collection = (props: any) => {
   for (const [i, child] of props.value.entries()) {
     children.push(
       <div className="flex" key={i}>
-        <div className="text-lg w-24 border-2 flex flex-col justify-center items-center">
+        <div className="text-lg w-24 flex flex-col justify-center items-center">
           {i + 1}
-          <div className= "border-2 hover:bg-red-600 hover:text-white cursor-pointer text-sm py-2 px-2 mt-10" 
+          <div className= "btn-danger text-sm font-semibold py-2 px-2 mt-10" 
           onClick={() => deleteSubModel(i)}>Delete</div>
         </div>
         <div className="flex-1">
@@ -137,13 +137,12 @@ const Collection = (props: any) => {
     )
   }
   return (
-    <div className="border-2 p-4 my-4">
+    <div className="border-2 p-4 my-4 card">
       <div className="mt-2">
         <h2 className="text-lg mb-2">{props.collectionLabel} (a group consisting of multiple {props.subSchema.name})</h2>
         {children}
       </div>
-      <div className="addSubModel border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
-      text-center font-semibold" onClick={newSubModel}>
+      <div className="addSubModel mt-6 w-max btn-primary" onClick={newSubModel}>
         Add new {props.subSchema.name}
       </div>
     </div>

@@ -44,7 +44,7 @@ export const SchemaBuilder = ({
     }
   };
   return (
-    <div className="border-2 mt-12 px-12 py-8">
+    <div className="card my-12 px-12 py-8">
       <div>
         <h1 className="text-2xl font-semibold">Schema builder</h1>
         <div className="mt-4">
@@ -52,7 +52,7 @@ export const SchemaBuilder = ({
             onInput={nameChangeHandler}
             className="border-2 text-xl py-2 px-2" />
         </div>
-        <h2 className="text-lg mt-6">Attributes:</h2>
+        <h2 className="text-lg mt-6 font-semibold">Attributes:</h2>
         {attributes.map((attribute, index) => (
           <AttributeField
             attribute={attribute}
@@ -61,15 +61,17 @@ export const SchemaBuilder = ({
           />
         ))}
         <div className="mt-2">
-          <button onClick={addNewBlankAttribute} className="border-2 mt-4 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white>
-                text-center font-semibold">Add new attribute</button>
+          <button onClick={addNewBlankAttribute} className="btn-primary mt-4">Add new attribute</button>
         </div>
       </div>
-      <div>
-        <button onClick={() => updateHandler(workingSchema)} className="border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
-        text-center font-semibold">SAVE</button>
-        <button onClick={() => updateHandler(schema)} className="border-2 mt-6 ml-4 w-max px-4 py-4 cursor-pointer hover:bg-red-600 hover:text-white
-        text-center font-semibold">EXIT WITHOUT SAVING</button>
+      <div className="mt-8 border-t-2 flex">
+        <button onClick={() => updateHandler(workingSchema)} className="mt-6 btn-good flex content-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+</svg>
+        SAVE
+          </button>
+        <button onClick={() => updateHandler(schema)} className="btn-danger mt-6 ml-4">EXIT WITHOUT SAVING</button>
       </div>
     </div>
   );
@@ -109,7 +111,7 @@ const AttributeField = ({
     }
   };
   return (
-    <div className="border-2 mt-2 px-4 py-4">
+    <div className="card border-t-2 mt-2 px-4 py-4">
       Attribute
       <div className="flex">
         <div className="w-48">Label:</div>
@@ -227,8 +229,8 @@ const EnumSetSelector = ({
             </div>)}
         </div>
         <div onClick={addOption}    // fix the styling on this 
-          className="border-2 h-8 px-4 cursor-pointer hover:bg-indigo-600 hover:text-white">
-          Add new option
+          className="btn-primary px-4 h-12 flex content-center justify-center">
+          <span className="">Add new option</span>
         </div>
       </div>
     </div>

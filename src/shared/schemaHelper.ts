@@ -1,12 +1,13 @@
-import { Schema, AttributeDefinition } from "./types"
-import { AttributeType, Model, Attribute } from "../../motion-bee/lib/types"
+import { Schema, AttributeDefinition, Rule, RuleSet } from "./types"
+import { AttributeType, Model, Attribute, ModelFunc, BooleanFunc, Expression, CollectionFunc, IdentityFunc, NumberFunc } from "../../motion-bee/lib/types"
+import { RuleStore } from "./RuleStore"
 
-export function schemaLookup (schemaName: string)  {    // dummy value to simulate lookup from store
+export function schemaLookup(schemaName: string) {    // dummy value to simulate lookup from store
   const groupSchema: Schema = {
     name: "Gathering",
     attributes: [
       { label: "Group", type: AttributeType.Collection, subtype: "Person" },
-      { label: "All from same household", type: AttributeType.Boolean }
+      { label: "All persons are from the same household", type: AttributeType.Boolean }
     ]
   }
   const personSchema: Schema = {
@@ -14,9 +15,6 @@ export function schemaLookup (schemaName: string)  {    // dummy value to simula
     attributes: [
       { label: "Age", type: AttributeType.Number },
       { label: "Is fully vaccinated", type: AttributeType.Boolean },
-      { label: "Type of vaccine", type: AttributeType.Enum, enumSet:["Pfizer", "Moderna", "Sinovac", "Other"]}, 
-      { label: "Date of vaccination", type: AttributeType.Date},
-      // { label: "Children", type: AttributeType.Collection, subtype:"Person"}
     ]
   }
   const insolvSchema: Schema = {
@@ -45,9 +43,81 @@ export function modelFromSchema(schema: Schema): Model {
 
 const setDefaultAttrs = (attr: AttributeDefinition): Attribute => {
   switch (attr.type) {
-    case AttributeType.Boolean: return ({...attr, value: true})
-    case AttributeType.Number: return ({...attr, value: 0})
-    case AttributeType.Collection: return ({...attr, value: []})
-    default: return ({...attr, value: undefined})
+    case AttributeType.Boolean: return ({ ...attr, value: true })
+    case AttributeType.Number: return ({ ...attr, value: 0 })
+    case AttributeType.Collection: return ({ ...attr, value: [] })
+    default: return ({ ...attr, value: undefined })
   }
+}
+
+
+const groupSchema: Schema = {
+  name: "Gathering",
+  attributes: [
+    { label: "Group", type: AttributeType.Collection, subtype: "Person" },
+    { label: "All persons are from the same household", type: AttributeType.Boolean }
+  ]
+}
+const personSchema: Schema = {
+  name: "Person",
+  attributes: [
+    { label: "Age", type: AttributeType.Number },
+    { label: "Is fully vaccinated", type: AttributeType.Boolean },
+  ]
+}
+
+const isVaccinated: Expression = {
+  args: [
+    {
+      args: ["vaccinated"],
+      op: ModelFunc.Lookup,
+    },
+  ],
+  op: BooleanFunc.IsChecked,
+};
+
+const allVaccinated: Expression = {
+  args: [
+    {
+      args: ["Group"],
+      op: ModelFunc.Lookup,
+    },
+    {
+      args: [isVaccinated],
+      op: IdentityFunc.Lambda,
+    },
+  ],
+  op: CollectionFunc.AllOf,
+};
+
+const groupSize: Expression = {
+  args: [
+    {
+      args: ["Group"],
+      op: ModelFunc.Lookup,
+    }
+  ],
+  op: CollectionFunc.NumberOf
+}
+
+const maxFive: Expression = {
+  args: [
+    groupSize, 5
+  ],
+  op: NumberFunc.LessThanOrEqual
+}
+
+const rule1: Rule = {
+  expr: maxFive,
+  input: groupSchema
+}
+
+const dineInRuleset: RuleSet = {
+  title: "Dine In (12 Aug 2021 onwards)",
+  rules: [rule1]
+}
+
+export const testRuleStore: RuleStore = {
+  schemata: [groupSchema, personSchema],
+  ruleSets: [dineInRuleset]
 }

@@ -30,21 +30,20 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
   const { index } = selectedSchema;
   return (
     <>
-      <div className="border-2 mt-4 p-4">
+      <div className="border-2 bg-blue-100 border-blue-200 rounded-md mt-4 p-4">
         <h1 className="font-semibold text-xl">All schemata (click each one to edit):</h1>
         {store.getSchemata.length === 0 ?
           <div className="mt-4">No schemata yet! Press "Add new Schema" below to create your first schema.</div>
           :
           store.getSchemata.map((schema, index) => (
-            <div onClick={() => editHandler(index)} className="border-2 mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100">
+            <div onClick={() => editHandler(index)} className="card mt-2 px-4 py-2 border-2 flex cursor-pointer hover:bg-gray-200">
               <span className="w-36 text-2xl">{schema.name}</span>
               <span className="flex-1 flex content-center">{JSON.stringify(schema)}</span>
             </div>
           ))}
       </div>
       {!openEditor && (
-        <button onClick={() => setOpenEditor(true)} className="border-2 mt-6 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
-        text-center font-semibold">Add new Schema</button>
+        <button onClick={() => setOpenEditor(true)} className="btn-primary mt-6">Add new Schema</button>
       )}
       {openEditor && (
         <subtypeContext.Provider value={[...store.getSchemata.map((schema) => schema.name)]}>
