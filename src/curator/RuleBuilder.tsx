@@ -361,7 +361,7 @@ const DateExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
-          <option value={option}>{option}</option>
+          <option value={option}>{toPlainEnglish(option)}</option>
         ))}
       </select>
       <input type="date" name="Date" onInput={onRightSubExpUpdate} value={right as string} />
@@ -406,7 +406,7 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
-          <option value={option}>{option}</option>
+          <option value={option}>{toPlainEnglish(option)}</option>
         ))}
       </select>
       <input type="number" name="Number" onInput={onRightSubExpUpdate} value={right as string} />
@@ -448,7 +448,7 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
-          <option value={option}>{option}</option>
+          <option value={option}>{toPlainEnglish(option)}</option>
         ))}
       </select>
       <select onChange={onRightSubExpUpdate} value={right as string}>
@@ -479,7 +479,7 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
       {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
-          <option value={option}>{option}</option>
+          <option value={option}>{toPlainEnglish(option)}</option>
         ))}
       </select>
     </div>
@@ -488,4 +488,31 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
 
 const isExpr = (e: Expression): e is Expr => {
   return typeof e === "object";
+};
+
+const toPlainEnglish = (option: FuncType ) => {
+  switch (option) {
+    case ModelFunc.Lookup:
+    case NumberFunc.Equal: return "Equals"
+    case NumberFunc.LessThan: return "Is less than"
+    case NumberFunc.LessThanOrEqual: return "Is less than or equal to"
+    case NumberFunc.MoreThan: return "Is more than"
+    case NumberFunc.MoreThanOrEqual: return "Is more than or equal to"
+    case CollectionFunc.AllOf: 
+    case CollectionFunc.AnyOf:
+    case CollectionFunc.NoneOf:
+    case CollectionFunc.NumberOf:
+    case CollectionFunc.Size:
+    case DateFunc.IsAfter: return "Is after"
+    case DateFunc.IsBefore: return "Is before"
+    case DateFunc.IsBetween: return "Is between"
+    case EnumFunc.Is: return "Is"
+    case EnumFunc.IsNot: return "Is not"
+    case BooleanFunc.IsChecked: return "Is true"
+    case BooleanFunc.IsNotChecked: return "Is not true"
+    case OptionalFunc.Exists: return "Exists"
+    case OptionalFunc.ExistsAnd: return "Exists and"
+    default:
+      return option
+  }
 };
