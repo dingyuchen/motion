@@ -1,54 +1,85 @@
 import { useState } from "preact/hooks";
 
-import { Attribute, AttributeType, Model } from "../../motion-bee/lib/types";
+import {
+  Attribute,
+  AttributeType,
+  LogicalFunc,
+  Model,
+  Value
+} from "../../motion-bee/lib/types";
 
 import { ModelCard } from "./ModelCard";
-import { AttributeDefinition, Schema } from "../shared/types";
+import { AttributeDefinition, RuleSet, Schema } from "../shared/types";
 import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
+import { StoreHandler } from "../shared/RuleStore";
+import { evaluator } from "../../motion-bee/lib/eval";
 
-enum View {
-  Edit = "edit",
-  Select = "select",
+interface ModelSchemaPair {
+  model: Model,
+  schema: Schema
 }
 
-type ConsumerEditProps = {
-  schemaStr: string;
-  handleBack: () => void;
-};
+export function ConsumerEdit(
+  { ruleset, handleBack, store }:
+    {
+      ruleset: RuleSet;
+      handleBack: (() => void);
+      store: StoreHandler
+    }) {
+  
+  const schemata: Schema[] = ruleset.rules.map((rule) => rule.input)
+  const uniqueSchemata: Schema[] = Array.from(new Set (schemata))
 
-export function ConsumerEdit(props: ConsumerEditProps) {
-  const schema: Schema = schemaLookup(props.schemaStr);
+  const initialPairs: ModelSchemaPair[] = uniqueSchemata.map((schema) => {
+    return {model: modelFromSchema(schema), schema: schema}})
 
-  // init model from provided schema
-  const initialModel: Model = modelFromSchema(schema);
+  const [pairs, setPairs] = useState(initialPairs)
+  const [outcomes, setOutcomes ] = useState<Value[]>([])
+  const handleChange = (newModel: Model, index: number) => {
+    const newPairs = [...pairs]
+    newPairs[index] = {model: newModel, schema:newPairs[index].schema}
+    setPairs(newPairs)
+  }
 
-  const [model, setModel] = useState(initialModel);
-
-  const handleChange = (newModel: Model) => {
-    setModel(newModel);
-  };
+  const handleSubmit = () => {
+    const rules = ruleset.rules
+    const outcomes: Value[] = []
+    for (const rule of rules) {
+      const schema = rule.input
+      const model = pairs.find((pair) => pair.model.label === schema.name)!.model
+      console.log(model)
+      outcomes.push(evaluator(rule.expr, model))
+    }
+    setOutcomes(outcomes)
+  }
 
   return (
     <>
       <div className="mt-16">
-        <button
-          className="border-2 w-48 py-4 px-4 text-lg hover:bg-indigo-600 hover:text-white text-center font-semibold"
-          onClick={props.handleBack}
-        >
-          Back to scenario selection
-        </button>
+        <div className="flex w-11/12">
+          <button
+            className="btn-danger px-4 text-md flex"
+            onClick={handleBack}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+            </svg>
+            Back
+          </button>
+          <div className="flex-1"></div>
+          <button onClick={handleSubmit} className="submit btn-good">Evaluate</button>
+        </div>
       </div>
       <div className="mt-4">
-        <h1>CONSUMER VIEW</h1>
-        <ModelCard model={model} onChange={handleChange} schema={schema} />
+        <h1 className="mb-4">CONSUMER VIEW</h1>
+        {pairs.map((pair, index) => <ModelCard model={pair.model} onChange={(newModel) => handleChange(newModel, index)} schema={pair.schema} store={store}/>)}
       </div>
       <div className="mt-12 flex justify-center">
-        <button
-          className="submit border-2 w-max px-4 py-4 cursor-pointer hover:bg-indigo-600 hover:text-white
-      text-center font-semibold"
-        >
-          Submit
-        </button>
+        <button onClick={handleSubmit} className="submit btn-good">Evaluate</button>
+      </div>
+      <div className="mt-12 flex justify-center">
+        {outcomes.length > 0 ? outcomes.every(o => o === true)  ? 
+        <span className="text-green-600 font-semibold">PERMITTED</span> : 
+        <span className="text-red-600 font-semibold">NOT PERMITTED</span> : <span></span>}
       </div>
     </>
   );

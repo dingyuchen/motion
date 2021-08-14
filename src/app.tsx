@@ -27,8 +27,8 @@ export function App() {
 
   return (
     <>
-      <div class="App py-10 bg-gray-100">
-        <div class="mx-auto mt-4 flex w-48 rounded-md border-2">
+      <div class="App py-10">
+        <div class="mx-auto mt-4 flex w-48 rounded-md border-2 border-gray-300">
           <div
             class={`curatorbutton flex-1 w-16 h-10 border-r-2 border-gray-200 cursor-pointer flex items-center justify-center rounded-l-sm
             ${view === View.Curator ? "bg-white" : ""}`}
