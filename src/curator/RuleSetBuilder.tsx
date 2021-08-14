@@ -46,20 +46,20 @@ export const RuleSetBuilder = ({
   };
 
   return (
-    <div>
+    <div className="card mt-12 px-4 py-4">
       <div>
-        RuleSet Builder
-        <div>
-          <input type="text" label={title} onInput={nameChangeHandler} />
+        <h1 className="font-semibold text-2xl">New Ruleset</h1>
+        <div className="mt-4">
+          <input type="text" value={title} placeholder="Title of ruleset" onInput={nameChangeHandler} className="text-xl font-semibold py-2 px-2"/>
         </div>
-        Rules (disjunctive):
+        <h2 className="text-lg font-semibold mt-6">Rules (disjunctive):</h2>
         {rules.map((rule, index) => (
           <RuleBuilder rule={rule} index={index} ruleUpdateHandler={ruleUpdateHandler(index)} />
         ))}
-        <button onClick={addNewBlankRule}>Add new rule</button>
+        <button onClick={addNewBlankRule} className="btn-primary mt-8">Add new rule</button>
       </div>
       {warningMsg && <div>{warningMsg}</div>}
-      <button onClick={() => updateHandler(workingRuleSet)}>Done</button>
+      <button onClick={() => updateHandler(workingRuleSet)} className="btn-good mt-10">Done</button>
     </div>
   );
 };

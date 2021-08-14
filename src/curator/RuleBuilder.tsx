@@ -41,7 +41,7 @@ export const RuleBuilder = ({
   };
 
   return (
-    <div>
+    <div className="card border-2 w-11/12">
       <h1>{index + 1}</h1>
       Model selection
       <select onChange={updateInputSchema}>

@@ -33,7 +33,7 @@ export const SchemaEditor = ({ store }: { store: StoreHandler }) => {
           store.getSchemata.map((schema, index) => (
             <div
               onClick={() => editHandler(index)}
-              className="border-2 mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-200"
+              className="card mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100"
             >
               <span className="w-36 text-2xl">{schema.name}</span>
               <span className="flex-1 flex content-center">{JSON.stringify(schema)}</span>

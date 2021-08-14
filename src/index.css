@@ -16,6 +16,6 @@
     @apply rounded-md bg-gray-50 shadow-md
   }
   input, select {
-    @apply rounded-md
+    @apply rounded-md border-2
   }
 }
