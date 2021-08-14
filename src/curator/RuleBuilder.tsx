@@ -46,14 +46,16 @@ export const RuleBuilder = ({
   };
 
   return (
-    <div className="card border-2 w-11/12 px-4 py-4">
+    <div className="card border-2 w-11/12 px-4 py-4 mt-4">
       <h1 className="font-semibold text-xl">Rule {index + 1}</h1>
-      Model selection
-      <select onChange={updateInputSchema} value={rule.input.name}>
-        {schemata.map((schema) => (
-          <option value={schema.name}>{schema.name}</option>
-        ))}
-      </select>
+      <div className="flex">
+        <h2 className="text-lg font-semibold">involving the schema:</h2>
+        <select onChange={updateInputSchema} value={rule.input.name} className="font-semibold ml-2">
+          {schemata.map((schema) => (
+            <option value={schema.name}>{schema.name}</option>
+          ))}
+        </select>
+      </div>
       <RuleContext.Provider value={rule}>
         <JunctionExpressionBuilder rule={rule} exprUpdateHandler={expressionUpdateHandler} />
       </RuleContext.Provider>
@@ -94,7 +96,6 @@ const JunctionExpressionBuilder = ({
     }
   };
 
-  // TODO: add button to interact
   const addSubJunction = () => {
     if (isExpr(expr)) {
       const args = expr.args as Expression[];
@@ -111,16 +112,18 @@ const JunctionExpressionBuilder = ({
 
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
-    <div>
+    <div className="p-2 mt-2">
       {expr.args.length > 1 && (
-        <select onChange={junctionUpdateHandler} value={op}>
+        <select onChange={junctionUpdateHandler} value={op} className="text-3xl font-semibold">
           {options.map((option) => (
             <option value={option}>{option}</option>
           ))}
         </select>
       )}
-      {expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}
-      <button onClick={addJunction}>More</button>
+      <span className="ml-4 font-semibold text-lg">{op === LogicalFunc.And ? "All of the following:" : "At least one of the following:"}</span>
+      <div>{expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}</div>
+      <button onClick={addJunction} className="btn-primary text-md font-semibold mt-4">New condition</button>
+      <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">New logical group</button>
     </div>
   );
 };
@@ -151,7 +154,6 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
     }
   };
 
-  // TODO: add button to interact
   const addSubJunction = () => {
     if (isExpr(expr)) {
       const args = expr.args as Expression[];
@@ -168,20 +170,21 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
 
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
-    <div>
+    <div className="card border-2 p-2 mt-2">
       {expr.args.length > 1 && (
-        <select onChange={junctionUpdateHandler} value={op}>
+        <select onChange={junctionUpdateHandler} value={op} className="text-xl font-semibold">
           {options.map((option) => (
             <option value={op}>{option}</option>
           ))}
         </select>
       )}
       {expr.args.map((subExp, index) => (
-        <div id="test-sep" class="border-2">
+        <div id="test-sep" class="mt-2">
           {renderExpEditor(subExp as Expr, onSubExpressionUpdate(index))}
         </div>
       ))}
-      <button onClick={addJunction}>More subrule</button>
+      <button onClick={addJunction} className="btn-primary text-sm font-normal mt-4">New condition</button>
+      <button onClick={addSubJunction} className="btn-primary text-sm font-normal mt-4 ml-2">New logic group</button>
     </div>
   );
 };
@@ -436,7 +439,7 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
 
   const [left, right] = args;
   return (
-    <>
+    <div>
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
@@ -448,7 +451,7 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
           <option value={option}>{option}</option>
         ))}
       </select>
-    </>
+    </div>
   );
 };
 
@@ -467,14 +470,14 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
 
   const [param] = args;
   return (
-    <>
+    <div className="mt-2">
       {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
           <option value={option}>{option}</option>
         ))}
       </select>
-    </>
+    </div>
   );
 };
 

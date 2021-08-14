@@ -1,5 +1,5 @@
 import { Schema, AttributeDefinition, Rule, RuleSet } from "./types"
-import { AttributeType, Model, Attribute, ModelFunc, BooleanFunc, Expression, CollectionFunc, IdentityFunc, NumberFunc, LogicalFunc, Expr, EnumFunc } from "../../motion-bee/lib/types"
+import { AttributeType, Model, Attribute, ModelFunc, BooleanFunc, Expression, CollectionFunc, NumberFunc, LogicalFunc, Expr, EnumFunc } from "../../motion-bee/lib/types"
 import { RuleStore, StoreHandler } from "./RuleStore"
 
 export function schemaLookup(store: StoreHandler, schemaName: string): Schema | undefined {    // dummy value to simulate lookup from store

@@ -25,7 +25,7 @@ export const RuleSetEditor = ({ store }: { store: StoreHandler }) => {
     <>
       <div>Ruleset Editor</div>
       <div className="border-2 bg-blue-100 border-blue-200 rounded-md mt-4 p-4">
-        <div>All rulesets:</div>
+        <div className="font-semibold text-xl">All rulesets:</div>
         {store.getRuleSets.map((ruleSet, index) => (
           <div className="card mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100" onClick={() => editHandler(index)}>
             <span className="text-2xl w-64">{ruleSet.title}</span>
@@ -33,8 +33,9 @@ export const RuleSetEditor = ({ store }: { store: StoreHandler }) => {
           </div>
         ))}
       </div>
+      <div className="text-center mt-10 font-semibold">Tip: An activity is considered permitted if any rule evaluates to TRUE.</div>
       {openEditor ? (
-        <RuleSetBuilder ruleSet={selectedRuleSet} updateHandler={updateFn(index)} />
+        <RuleSetBuilder ruleSet={selectedRuleSet} updateHandler={updateFn(index)} key={index}/>
       ) : (
         <button onClick={() => setOpenEditor(true)} className="btn-primary mt-12">
           Add new Ruleset
