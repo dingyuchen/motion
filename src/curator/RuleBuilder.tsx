@@ -128,7 +128,7 @@ const JunctionExpressionBuilder = ({
         New condition
       </button>
       <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">
-        New logical group
+        New logic group
       </button>
     </div>
   );
@@ -346,6 +346,7 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     // WARN Naive non-recursive lookup, to revise if able
     const lookupExp = exp.args[0] as Expr;
     const groupAttrLabel = lookupExp.args[0];
+    
     const subSchemaName = attrSpace.find((attr) => attr.label === groupAttrLabel)!.subtype!;
     const subSchema = ruleStore.getSchema(subSchemaName);
     const ctx = { ...blankRule(), input: subSchema };
@@ -353,13 +354,13 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     // FIXME: display subschema in subrenderer (object cannot be child error)
     return (
       <RuleContext.Provider value={ctx}>
-        {/* <CollectionSubExpBuilder exprUpdateHandler={onRightSubExpUpdate} exp={e} />; */}
-        {renderExpEditor(e, exprUpdateHandler)}
+        <CollectionSubExpBuilder exprUpdateHandler={onRightSubExpUpdate} exp={e} />
+        {/* {renderExpEditor(e, exprUpdateHandler)} */}
       </RuleContext.Provider>
     );
   };
   return (
-    <div>
+    <div className="mt-4">
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
@@ -374,10 +375,10 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
 const CollectionSubExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   const rule = useContext(RuleContext);
   return (
-    <div>
-      {rule.input}
+    <>
+      {rule.input.name}
       {renderExpEditor(exp, exprUpdateHandler)}
-    </div>
+    </>
   );
 };
 
@@ -526,7 +527,7 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
   };
 
   const [param] = args;
-  console.log("ischecked", param);
+  // console.log("ischecked", param);
   return (
     <div className="mt-2">
       {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
@@ -555,7 +556,7 @@ const toPlainEnglish = (option: FuncType ) => {
     case CollectionFunc.AnyOf:
     case CollectionFunc.NoneOf:
     case CollectionFunc.NumberOf:
-    case CollectionFunc.Size:
+    case CollectionFunc.Size: return "Size"
     case DateFunc.IsAfter: return "Is after"
     case DateFunc.IsBefore: return "Is before"
     case DateFunc.IsBetween: return "Is between"

@@ -49,7 +49,7 @@ const personSchema: Schema = {
 const isVaccinated: Expression = {
   args: [
     {
-      args: ["vaccinated"],
+      args: ["Is fully vaccinated"],
       op: ModelFunc.Lookup,
     },
   ],
