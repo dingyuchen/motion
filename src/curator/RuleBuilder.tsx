@@ -40,8 +40,8 @@ export const RuleBuilder = ({
   };
 
   return (
-    <div className="card border-2 w-11/12">
-      <h1>{index + 1}</h1>
+    <div className="card border-2 w-11/12 px-4 py-4">
+      <h1 className="font-semibold text-xl">Rule {index + 1}</h1>
       Model selection
       <select onChange={updateInputSchema} value={rule.input.name}>
         {schemata.map((schema) => (

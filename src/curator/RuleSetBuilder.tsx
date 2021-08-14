@@ -50,7 +50,8 @@ export const RuleSetBuilder = ({
       <div>
         <h1 className="font-semibold text-2xl">New Ruleset</h1>
         <div className="mt-4">
-          <input type="text" value={title} placeholder="Title of ruleset" onInput={nameChangeHandler} className="text-xl font-semibold py-2 px-2"/>
+          <input type="text" value={title} placeholder="Title of ruleset" onInput={nameChangeHandler} 
+          className="text-xl font-semibold py-2 px-2 w-1/2"/>
         </div>
         <h2 className="text-lg font-semibold mt-6">Rules (disjunctive):</h2>
         {rules.map((rule, index) => (
