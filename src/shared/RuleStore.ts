@@ -33,11 +33,12 @@ export class StoreHandler {
   };
 
   getSchema = (schemaName: string) => {
-    const res = this.ruleStore.schemata.filter((schema) => schema.name === schemaName);
-    if (res.length < 1) {
+    console.log(schemaName);
+    const res = this.ruleStore.schemata.find((schema) => schema.name === schemaName);
+    if (res === undefined) {
       throw new Error("schema not in rulestore");
     }
-    return res[0];
+    return res;
   };
 
   get getSchemata() {
@@ -73,20 +74,22 @@ export const blankRuleStore = (): RuleStore => ({
       attributes: [
         {
           label: "Participants are all fully vaccinated",
-          type: AttributeType.Boolean
+          type: AttributeType.Boolean,
         },
         {
           label: "Type of event",
           type: AttributeType.Enum,
-          enumSet: ["Participants are predominantly seated or standing in a fixed position during the session.",
-            "Participants are predominantly non-seated and moving about during the session."]
+          enumSet: [
+            "Participants are predominantly seated or standing in a fixed position during the session.",
+            "Participants are predominantly non-seated and moving about during the session.",
+          ],
         },
         {
           label: "Number of participants",
-          type: AttributeType.Number
-        }
-      ]
-    }    
+          type: AttributeType.Number,
+        },
+      ],
+    },
   ],
-  ruleSets: [dineInRuleset, miceRuleset]
+  ruleSets: [dineInRuleset, miceRuleset],
 });

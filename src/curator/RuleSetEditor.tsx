@@ -27,15 +27,19 @@ export const RuleSetEditor = ({ store }: { store: StoreHandler }) => {
       <div className="border-2 bg-blue-100 border-blue-200 rounded-md mt-4 p-4">
         <div>All rulesets:</div>
         {store.getRuleSets.map((ruleSet, index) => (
-          <div className="card mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100"
-            onClick={() => editHandler(index)}>
+          <div className="card mt-2 px-4 py-2 flex cursor-pointer hover:bg-gray-100" onClick={() => editHandler(index)}>
             <span className="text-2xl w-64">{ruleSet.title}</span>
             <span className="flex-1">{JSON.stringify(ruleSet, null, 2)}</span>
           </div>
         ))}
       </div>
-      {!openEditor && <button onClick={() => setOpenEditor(true)} className="btn-primary mt-12">Add new Ruleset</button>}
-      {openEditor && <RuleSetBuilder ruleSet={selectedRuleSet} updateHandler={updateFn(index)} />}
+      {openEditor ? (
+        <RuleSetBuilder ruleSet={selectedRuleSet} updateHandler={updateFn(index)} />
+      ) : (
+        <button onClick={() => setOpenEditor(true)} className="btn-primary mt-12">
+          Add new Ruleset
+        </button>
+      )}
     </>
   );
 };
