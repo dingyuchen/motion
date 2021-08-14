@@ -12,6 +12,12 @@
   .btn-danger {
     @apply transition duration-200 shadow-md hover:shadow-lg px-4 py-2 bg-red-500 hover:bg-red-600 text-white cursor-pointer rounded-lg text-center font-semibold
   }
+  .btn-dev {
+    @apply transition duration-200 shadow-md hover:shadow-lg px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white cursor-pointer rounded-lg text-center font-semibold
+  }
+  .btn-neutral {
+    @apply transition duration-200 shadow-md border-2 border-gray-300 hover:shadow-lg px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-500 cursor-pointer rounded-lg text-center font-semibold
+  }
   .card {
     @apply rounded-md bg-gray-50 shadow-md
   }

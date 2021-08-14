@@ -62,10 +62,7 @@ const allVaccinated: Expression = {
       args: ["Group"],
       op: ModelFunc.Lookup,
     },
-    {
-      args: [isVaccinated],
-      op: IdentityFunc.Lambda,
-    },
+    isVaccinated
   ],
   op: CollectionFunc.AllOf,
 };
