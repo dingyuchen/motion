@@ -349,7 +349,8 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     const subSchemaName = attrSpace.find((attr) => attr.label === groupAttrLabel)!.subtype!;
     const subSchema = ruleStore.getSchema(subSchemaName);
     const ctx = { ...blankRule(), input: subSchema };
-    console.log(e);
+    // TODO: discuss if rhs SHOULD BE a boolean operation (easier to reuse components + customizability)
+    // FIXME: display subschema in subrenderer (object cannot be child error)
     return (
       <RuleContext.Provider value={ctx}>
         {/* <CollectionSubExpBuilder exprUpdateHandler={onRightSubExpUpdate} exp={e} />; */}
@@ -365,11 +366,7 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
           <option value={option}>{option}</option>
         ))}
       </select>
-      {isExpr(right as Expr) &&
-        // TODO: lookup attrdef on the left, pass to a builder
-        // since rhs is not necessarily a boolean operation, need generic renderer
-        // TODO: discuss if rhs SHOULD BE a boolean operation (easier to reuse components + customizability)
-        getSubExpBuilder(right as Expr)}
+      {isExpr(right as Expr) && getSubExpBuilder(right as Expr)}
     </div>
   );
 };
