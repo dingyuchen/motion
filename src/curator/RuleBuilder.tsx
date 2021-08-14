@@ -11,6 +11,7 @@ import {
   Expression,
   FuncType,
   LogicalFunc,
+  Model,
   ModelFunc,
   NumberFunc,
   OptionalFunc,
@@ -120,10 +121,10 @@ const JunctionExpressionBuilder = ({
           ))}
         </select>
       )}
-      <span className="ml-4 font-semibold text-lg">{op === LogicalFunc.And ? "All of the following:" : "At least one of the following:"}</span>
+      <span className="ml-4 font-semibold text-lg">{expr.args.length > 1 && (op === LogicalFunc.And ? "All of the following:" : "At least one of the following:")}</span>
       <div>{expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}</div>
       <button onClick={addJunction} className="btn-primary text-md font-semibold mt-4">New condition</button>
-      <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">New logical group</button>
+      <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">New logic group</button>
     </div>
   );
 };
@@ -170,7 +171,7 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
 
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
-    <div className="card border-2 p-2 mt-2">
+    <div className="card border-2 border-gray-300 p-2 mt-2">
       {expr.args.length > 1 && (
         <select onChange={junctionUpdateHandler} value={op} className="text-xl font-semibold">
           {options.map((option) => (
@@ -316,7 +317,7 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
   };
   const [left, right] = args;
   return (
-    <>
+    <div>
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
       <select onChange={opUpdateHandler} value={op}>
         {options.map((option) => (
@@ -324,7 +325,7 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
         ))}
       </select>
       {!!right && renderExpEditor(right as Expr, onRightSubExpUpdate)}
-    </>
+    </div>
   );
 };
 
@@ -363,7 +364,6 @@ const DateExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
           <option value={option}>{option}</option>
         ))}
       </select>
-      {/* // TODO: proper input field */}
       <input type="date" name="Date" onInput={onRightSubExpUpdate} value={right as string} />
       {op === DateFunc.IsBetween && (
         <>
@@ -409,7 +409,6 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
           <option value={option}>{option}</option>
         ))}
       </select>
-      {/* // TODO: proper input field */}
       <input type="number" name="Number" onInput={onRightSubExpUpdate} value={right as string} />
     </>
   );
@@ -418,6 +417,12 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
 const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   const options = [EnumFunc.Is, EnumFunc.IsNot];
   const attrSpace = useContext(RuleContext).input.attributes; // TODO: lookup return value of subexpression
+
+  // Naive non-recursive lookup, to revise if able 
+  const exprModel = exp.args[0] as Expr
+  const exprAttributeName = exprModel.args[0]
+  const enumSpace = attrSpace.find((attr) => attr.label === exprAttributeName)!.enumSet!
+  
   const { args, op } = exp;
   const opUpdateHandler = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
@@ -447,7 +452,7 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
         ))}
       </select>
       <select onChange={onRightSubExpUpdate} value={right as string}>
-        {options.map((option) => (
+        {enumSpace.map((option) => (
           <option value={option}>{option}</option>
         ))}
       </select>

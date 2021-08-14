@@ -74,7 +74,7 @@ const groupSize: Expression = {
       op: ModelFunc.Lookup,
     }
   ],
-  op: CollectionFunc.NumberOf
+  op: CollectionFunc.Size
 }
 
 const maxFiveVax: Expression = {
