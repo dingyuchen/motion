@@ -5,8 +5,11 @@ import {
   BooleanFunc,
   CollectionFunc,
   DateFunc,
+  EnumFunc,
   Expr,
   Expression,
+  FuncType,
+  IdentityFunc,
   LogicalFunc,
   ModelFunc,
   NumberFunc,
@@ -89,19 +92,67 @@ const JunctionExpressionBuilder = ({
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
     <div>
-      {(expr as Expr).args.length > 1 && (
+      {expr.args.length > 1 && (
         <select onChange={junctionUpdateHandler} value={op}>
           {options.map((option) => (
             <option value={op}>{option}</option>
           ))}
         </select>
       )}
-      {(expr as Expr).args.map((subExp, index) => renderContinuation(subExp as Expr, onSubExpressionUpdate(index)))}
+      {expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}
       <button onClick={addJunction}>More</button>
     </div>
   );
 };
 
+const LogicalExpBuilder = ({
+  input, // to reference input model
+  expr,
+  exprUpdateHandler,
+}: {
+  input: Schema;
+  expr: Expr;
+  exprUpdateHandler: (_: Expression) => void;
+}) => {
+  const ruleStore = useContext(RuleStoreContext);
+  const { op } = expr;
+
+  const junctionUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const junction = e.currentTarget.value as LogicalFunc;
+      exprUpdateHandler({ ...expr, op: junction });
+    }
+  };
+  const onSubExpressionUpdate = (index: number) => (exp: Expression) => {
+    if (isExpr(expr)) {
+      const newExprs = immutableReplace(expr.args as Expression[], index, exp);
+      exprUpdateHandler({ ...expr, args: newExprs });
+    }
+  };
+
+  const addJunction = () => {
+    if (isExpr(expr)) {
+      const args = expr.args as Expression[];
+      const defaultExpression = expressionFromSource(ruleStore, input);
+      exprUpdateHandler({ ...expr, args: args.concat(defaultExpression) });
+    }
+  };
+
+  const options = [LogicalFunc.And, LogicalFunc.Or];
+  return (
+    <div>
+      {expr.args.length > 1 && (
+        <select onChange={junctionUpdateHandler} value={op}>
+          {options.map((option) => (
+            <option value={op}>{option}</option>
+          ))}
+        </select>
+      )}
+      {expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}
+      <button onClick={addJunction}>More</button>
+    </div>
+  );
+};
 const expressionFromSource = (ruleStore: StoreHandler, input: Schema): Expr => {
   const defAttribute = input.attributes[0]; // TODO: do not allow schema with no attributes
   const { label } = defAttribute;
@@ -138,30 +189,139 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
   }
 };
 
-const renderContinuation = (e: Expr, nextExpUpdateHandler: (_: Expr) => void) => {
+const renderExpEditor = (e: Expr, exprUpdateHandler: (_: Expr) => void) => {
   switch (e.op) {
+    case ModelFunc.Lookup:
+      return <LookUpExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case NumberFunc.Equal:
+    case NumberFunc.LessThan:
+    case NumberFunc.LessThanOrEqual:
+    case NumberFunc.MoreThan:
+    case NumberFunc.MoreThanOrEqual:
+      return <NumberExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case CollectionFunc.AllOf:
+    case CollectionFunc.AnyOf:
+    case CollectionFunc.NoneOf:
+    case CollectionFunc.NumberOf:
+      return <CollectionExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case DateFunc.IsAfter:
+    case DateFunc.IsBefore:
+    case DateFunc.IsBetween:
+      return <DateExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case EnumFunc.Is:
+    case EnumFunc.IsNot:
+      return <EnumExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case BooleanFunc.IsChecked:
+    case BooleanFunc.IsNotChecked:
+      return <BoolExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case OptionalFunc.Exists:
+    case OptionalFunc.ExistsAnd:
+      return <OptionalExpEditor exp={e} exprUpdateHandler={exprUpdateHandler} />;
+    case IdentityFunc.Lambda: // deprecated
     default:
-      return <div>{JSON.stringify(e)}</div>;
+      return <div class="border-2">{JSON.stringify(e)}</div>;
   }
 };
 
-const CollectionExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>Collection operations</div>;
+const OptionalExpEditor = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  return <div>Optional operations</div>;
 };
 
-const DateExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
+const LookUpExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  return <div>Model operations</div>;
+};
+
+const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  const options = [CollectionFunc.AllOf, CollectionFunc.AnyOf, CollectionFunc.NoneOf, CollectionFunc.NumberOf];
+  const { args, op } = exp;
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const newOp = e.currentTarget.value as FuncType;
+      if (newOp !== op) {
+        // TODO: generate new expression
+        if (newOp === CollectionFunc.NumberOf) {
+          //
+        } else {
+          //
+        }
+      }
+      exprUpdateHandler({ ...exp, op: newOp });
+    }
+  };
+  const onLeftSubExpUpdate = (e: Expr) => {
+    const newArgs = [args[0], e];
+    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+  };
+  const onRightSubExpUpdate = (e: Expr) => {
+    const newArgs = [e, args[1]];
+    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+  };
+  const [left, right] = args;
+  console.log(right);
+  return (
+    <>
+      {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
+      <select onChange={opUpdateHandler} value={op}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+      {/* // TODO: proper input field */}
+      {renderExpEditor(right as Expr, onRightSubExpUpdate)}
+    </>
+  );
+};
+
+const DateExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   return <div>Date operations</div>;
 };
 
-const NumberExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>Number operations</div>;
+const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  const options = [
+    NumberFunc.Equal,
+    NumberFunc.LessThan,
+    NumberFunc.LessThanOrEqual,
+    NumberFunc.MoreThan,
+    NumberFunc.MoreThanOrEqual,
+  ];
+  const { args, op } = exp;
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const newOp = e.currentTarget.value as FuncType;
+      exprUpdateHandler({ ...exp, op: newOp });
+    }
+  };
+  const onLeftSubExpUpdate = (e: Expr) => {
+    const newArgs = [e, args[1]];
+    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+  };
+  const onRightSubExpUpdate = (e: Event) => {
+    if (e.currentTarget instanceof HTMLInputElement) {
+      const rhs = JSON.parse(e.currentTarget.value);
+      const newArgs = [args[0], rhs];
+      exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    }
+  };
+  const [left, right] = args;
+  return (
+    <>
+      {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
+      <select onChange={opUpdateHandler} value={op}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+      {/* // TODO: proper input field */}
+      <input type="number" name="Number" onInput={onRightSubExpUpdate} value={right as string} />
+    </>
+  );
 };
 
-const EnumExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
+const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   return <div>Enum operations</div>;
 };
 
-const NegationExpBuilder = ({ exprUpdateHandler }: { exprUpdateHandler: (_: Expr) => void }) => {
+const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   return <div>boolean operations</div>;
 };
 
