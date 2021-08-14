@@ -8,21 +8,18 @@ import { AttributeDefinition, Rule, RuleSet, Schema } from "../shared/types";
 import { modelFromSchema, schemaLookup } from "../shared/schemaHelper";
 import { RuleStore, StoreHandler } from "../shared/RuleStore";
 
-import { testRuleStore } from "../shared/schemaHelper";     // FOR TESTING
+import { blankRuleStore } from "../shared/RuleStore";
 
 enum View {
   Edit = "edit",
   Select = "select",
 }
 
-// for testing
-const schemaList: string[] = ["Group", "Insolvency"];
-
 export function Consumer({ store }: { store: StoreHandler }) {
 
   const [view, setView] = useState(View.Select)
 
-  const ruleStore = testRuleStore
+  const ruleStore = blankRuleStore()
   const rulesets: RuleSet[] = ruleStore.ruleSets
   const [activeRuleset, setActiveRuleset] = useState(rulesets[0])
 

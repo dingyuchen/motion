@@ -93,8 +93,8 @@ const rule1: Rule = {
   input: groupSchema
 }
 
-const dineInRuleset: RuleSet = {
-  title: "Dine In (12 Aug 2021 onwards)",
+export const dineInRuleset: RuleSet = {
+  title: "Dine In (12 Aug 2021 onwards) - TESTING (incomplete)",
   rules: [rule1]
 }
 
@@ -154,7 +154,7 @@ const moving250: Expr = {
   op: LogicalFunc.And
 }
 
-const miceRuleset: RuleSet = {
+export const miceRuleset: RuleSet = {
   title: "MICE event pilots",
   rules: [{
     expr: {args: [unvax50, fixed500, moving250], op: LogicalFunc.Or},

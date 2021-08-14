@@ -48,7 +48,7 @@ export class StoreHandler {
     return this.ruleStore.ruleSets;
   }
 }
-
+import { miceRuleset, dineInRuleset } from "./schemaHelper";
 export const blankRuleStore = (): RuleStore => ({
   schemata: [
     {
@@ -68,6 +68,25 @@ export const blankRuleStore = (): RuleStore => ({
         // { label: "Children", type: AttributeType.Collection, subtype:"Person"}
       ],
     },
+    {
+      name: "MICE event pilots",
+      attributes: [
+        {
+          label: "Participants are all fully vaccinated",
+          type: AttributeType.Boolean
+        },
+        {
+          label: "Type of event",
+          type: AttributeType.Enum,
+          enumSet: ["Participants are predominantly seated or standing in a fixed position during the session.",
+            "Participants are predominantly non-seated and moving about during the session."]
+        },
+        {
+          label: "Number of participants",
+          type: AttributeType.Number
+        }
+      ]
+    }    
   ],
-  ruleSets: [],
+  ruleSets: [dineInRuleset, miceRuleset]
 });
