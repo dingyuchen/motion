@@ -1,3 +1,4 @@
+import { createContext } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import {
   Attribute,
@@ -9,7 +10,6 @@ import {
   Expr,
   Expression,
   FuncType,
-  IdentityFunc,
   LogicalFunc,
   ModelFunc,
   NumberFunc,
@@ -17,8 +17,10 @@ import {
 } from "../../motion-bee/lib/types";
 import { RuleStoreContext } from "../app";
 import { RuleStore, StoreHandler } from "../shared/RuleStore";
-import { AttributeDefinition, blankExpression, Rule, Schema } from "../shared/types";
+import { AttributeDefinition, blankExpression, blankRule, Rule, Schema } from "../shared/types";
 import { immutableReplace } from "../shared/util";
+
+const RuleContext = createContext(blankRule());
 
 export const RuleBuilder = ({
   rule,
@@ -31,6 +33,7 @@ export const RuleBuilder = ({
 }) => {
   const ruleStore = useContext(RuleStoreContext);
   const schemata = ruleStore.getSchemata;
+
   const updateInputSchema = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
@@ -51,7 +54,9 @@ export const RuleBuilder = ({
           <option value={schema.name}>{schema.name}</option>
         ))}
       </select>
-      <JunctionExpressionBuilder rule={rule} exprUpdateHandler={expressionUpdateHandler} />
+      <RuleContext.Provider value={rule}>
+        <JunctionExpressionBuilder rule={rule} exprUpdateHandler={expressionUpdateHandler} />
+      </RuleContext.Provider>
     </div>
   );
 };
@@ -89,13 +94,28 @@ const JunctionExpressionBuilder = ({
     }
   };
 
+  // TODO: add button to interact
+  const addSubJunction = () => {
+    if (isExpr(expr)) {
+      const args = expr.args as Expression[];
+      const defaultExpression = expressionFromSource(ruleStore, input);
+      const subJunction = { args: [defaultExpression], op: LogicalFunc.And };
+      exprUpdateHandler({ ...expr, args: args.concat(subJunction) });
+    }
+  };
+
+  // TODO: add button to interact
+  const negate = () => {
+    exprUpdateHandler({ op: LogicalFunc.Not, args: [expr] });
+  };
+
   const options = [LogicalFunc.And, LogicalFunc.Or];
   return (
     <div>
       {expr.args.length > 1 && (
         <select onChange={junctionUpdateHandler} value={op}>
           {options.map((option) => (
-            <option value={op}>{option}</option>
+            <option value={option}>{option}</option>
           ))}
         </select>
       )}
@@ -105,16 +125,9 @@ const JunctionExpressionBuilder = ({
   );
 };
 
-const LogicalExpBuilder = ({
-  input, // to reference input model
-  expr,
-  exprUpdateHandler,
-}: {
-  input: Schema;
-  expr: Expr;
-  exprUpdateHandler: (_: Expression) => void;
-}) => {
+const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   const ruleStore = useContext(RuleStoreContext);
+  const rule = useContext(RuleContext);
   const { op } = expr;
 
   const junctionUpdateHandler = (e: Event) => {
@@ -133,9 +146,24 @@ const LogicalExpBuilder = ({
   const addJunction = () => {
     if (isExpr(expr)) {
       const args = expr.args as Expression[];
-      const defaultExpression = expressionFromSource(ruleStore, input);
+      const defaultExpression = expressionFromSource(ruleStore, rule.input);
       exprUpdateHandler({ ...expr, args: args.concat(defaultExpression) });
     }
+  };
+
+  // TODO: add button to interact
+  const addSubJunction = () => {
+    if (isExpr(expr)) {
+      const args = expr.args as Expression[];
+      const defaultExpression = expressionFromSource(ruleStore, rule.input);
+      const subJunction = { args: [defaultExpression], op: LogicalFunc.And };
+      exprUpdateHandler({ ...expr, args: args.concat(subJunction) });
+    }
+  };
+
+  // TODO: add button to interact
+  const negate = () => {
+    exprUpdateHandler({ op: LogicalFunc.Not, args: [expr] });
   };
 
   const options = [LogicalFunc.And, LogicalFunc.Or];
@@ -148,8 +176,12 @@ const LogicalExpBuilder = ({
           ))}
         </select>
       )}
-      {expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}
-      <button onClick={addJunction}>More</button>
+      {expr.args.map((subExp, index) => (
+        <div id="test-sep" class="border-2">
+          {renderExpEditor(subExp as Expr, onSubExpressionUpdate(index))}
+        </div>
+      ))}
+      <button onClick={addJunction}>More subrule</button>
     </div>
   );
 };
@@ -203,6 +235,7 @@ const renderExpEditor = (e: Expr, exprUpdateHandler: (_: Expr) => void) => {
     case CollectionFunc.AnyOf:
     case CollectionFunc.NoneOf:
     case CollectionFunc.NumberOf:
+    case CollectionFunc.Size:
       return <CollectionExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
     case DateFunc.IsAfter:
     case DateFunc.IsBefore:
@@ -217,7 +250,9 @@ const renderExpEditor = (e: Expr, exprUpdateHandler: (_: Expr) => void) => {
     case OptionalFunc.Exists:
     case OptionalFunc.ExistsAnd:
       return <OptionalExpEditor exp={e} exprUpdateHandler={exprUpdateHandler} />;
-    case IdentityFunc.Lambda: // deprecated
+    case LogicalFunc.And:
+    case LogicalFunc.Or:
+      return <LogicalExpBuilder expr={e} exprUpdateHandler={exprUpdateHandler} />;
     default:
       return <div class="border-2">{JSON.stringify(e)}</div>;
   }
@@ -228,7 +263,27 @@ const OptionalExpEditor = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHa
 };
 
 const LookUpExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>Model operations</div>;
+  const rule = useContext(RuleContext);
+  const options = rule.input.attributes.map((attr) => attr.label);
+  const selectedAttr = exp.args[0] as string;
+  const ruleStore = useContext(RuleStoreContext);
+
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const attrLabel = e.currentTarget.value;
+      const newAttr = rule.input.attributes.find((attr) => attr.label === attrLabel);
+      const newLookup = { ...exp, args: [attrLabel] };
+      const newExp = expressionForType(ruleStore, newAttr!, newLookup);
+      exprUpdateHandler(newExp);
+    }
+  };
+  return (
+    <select onChange={opUpdateHandler} value={selectedAttr}>
+      {options.map((option) => (
+        <option value={option}>{option}</option>
+      ))}
+    </select>
+  );
 };
 
 const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
@@ -249,15 +304,54 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     }
   };
   const onLeftSubExpUpdate = (e: Expr) => {
-    const newArgs = [args[0], e];
-    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    // if the input has changed, new expr should be passed up to the root
+    exprUpdateHandler(e);
   };
   const onRightSubExpUpdate = (e: Expr) => {
     const newArgs = [e, args[1]];
     exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
   };
   const [left, right] = args;
-  console.log(right);
+  return (
+    <>
+      {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
+      <select onChange={opUpdateHandler} value={op}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+      {!!right && renderExpEditor(right as Expr, onRightSubExpUpdate)}
+    </>
+  );
+};
+
+const DateExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  const options = [DateFunc.IsAfter, DateFunc.IsBefore, DateFunc.IsBetween];
+  const { args, op } = exp;
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const newOp = e.currentTarget.value as FuncType;
+      exprUpdateHandler({ ...exp, op: newOp });
+    }
+  };
+  const onLeftSubExpUpdate = (e: Expr) => {
+    exprUpdateHandler(e);
+  };
+  const onRightSubExpUpdate = (e: Event) => {
+    if (e.currentTarget instanceof HTMLInputElement) {
+      const rhs = JSON.parse(e.currentTarget.value);
+      const newArgs = [args[0], rhs];
+      exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    }
+  };
+  const onFurtherRightExpUpdate = (e: Event) => {
+    if (op === DateFunc.IsBetween && e.currentTarget instanceof HTMLInputElement) {
+      const rrhs = JSON.parse(e.currentTarget.value);
+      const newArgs = [args[0], args[1], rrhs];
+      exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    }
+  };
+  const [left, right, moreRight] = args;
   return (
     <>
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
@@ -267,13 +361,15 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
         ))}
       </select>
       {/* // TODO: proper input field */}
-      {renderExpEditor(right as Expr, onRightSubExpUpdate)}
+      <input type="date" name="Date" onInput={onRightSubExpUpdate} value={right as string} />
+      {op === DateFunc.IsBetween && (
+        <>
+          And
+          <input type="date" name="Date" onInput={onFurtherRightExpUpdate} value={moreRight as string} />
+        </>
+      )}
     </>
   );
-};
-
-const DateExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>Date operations</div>;
 };
 
 const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
@@ -292,8 +388,7 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
     }
   };
   const onLeftSubExpUpdate = (e: Expr) => {
-    const newArgs = [e, args[1]];
-    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    exprUpdateHandler(e);
   };
   const onRightSubExpUpdate = (e: Event) => {
     if (e.currentTarget instanceof HTMLInputElement) {
@@ -318,11 +413,69 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
 };
 
 const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>Enum operations</div>;
+  const options = [EnumFunc.Is, EnumFunc.IsNot];
+  const attrSpace = useContext(RuleContext).input.attributes; // TODO: lookup return value of subexpression
+  const { args, op } = exp;
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const newOp = e.currentTarget.value as FuncType;
+      exprUpdateHandler({ ...exp, op: newOp });
+    }
+  };
+  const onLeftSubExpUpdate = (e: Expr) => {
+    exprUpdateHandler(e);
+  };
+
+  const onRightSubExpUpdate = (e: Event) => {
+    if (e.currentTarget instanceof HTMLInputElement) {
+      const rhs = JSON.parse(e.currentTarget.value);
+      const newArgs = [args[0], rhs];
+      exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    }
+  };
+
+  const [left, right] = args;
+  return (
+    <>
+      {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
+      <select onChange={opUpdateHandler} value={op}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+      <select onChange={onRightSubExpUpdate} value={right as string}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+    </>
+  );
 };
 
 const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
-  return <div>boolean operations</div>;
+  const options = [BooleanFunc.IsChecked, BooleanFunc.IsNotChecked];
+  const { args, op } = exp;
+  const opUpdateHandler = (e: Event) => {
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const newOp = e.currentTarget.value as FuncType;
+      exprUpdateHandler({ ...exp, op: newOp });
+    }
+  };
+  const onLeftSubExpUpdate = (e: Expr) => {
+    exprUpdateHandler(e);
+  };
+
+  const [param] = args;
+  return (
+    <>
+      {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
+      <select onChange={opUpdateHandler} value={op}>
+        {options.map((option) => (
+          <option value={option}>{option}</option>
+        ))}
+      </select>
+    </>
+  );
 };
 
 const isExpr = (e: Expression): e is Expr => {
