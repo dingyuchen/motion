@@ -33,7 +33,6 @@ export class StoreHandler {
   };
 
   getSchema = (schemaName: string) => {
-    console.log(schemaName);
     const res = this.ruleStore.schemata.find((schema) => schema.name === schemaName);
     if (res === undefined) {
       throw new Error("schema not in rulestore");

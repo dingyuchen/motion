@@ -1,7 +1,6 @@
-import { createContext } from "preact";
-import { useContext, useEffect, useState } from "preact/hooks";
+import { createContext, JSX } from "preact";
+import { useContext } from "preact/hooks";
 import {
-  Attribute,
   AttributeType,
   BooleanFunc,
   CollectionFunc,
@@ -39,7 +38,7 @@ export const RuleBuilder = ({
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
       const input = ruleStore.getSchema(schemaName);
-      ruleUpdateHandler({ ...rule, input });
+      ruleUpdateHandler({ input, expr: expressionFromSource(ruleStore, input) });
     }
   };
   const expressionUpdateHandler = (expr: Expression) => {
@@ -69,7 +68,7 @@ const JunctionExpressionBuilder = ({
   exprUpdateHandler,
 }: {
   rule: Rule;
-  exprUpdateHandler: (_: Expression) => void;
+  exprUpdateHandler: (_: Expr) => void;
 }) => {
   const ruleStore = useContext(RuleStoreContext);
   const { input } = rule;
@@ -121,10 +120,16 @@ const JunctionExpressionBuilder = ({
           ))}
         </select>
       )}
-      <span className="ml-4 font-semibold text-lg">{expr.args.length > 1 && (op === LogicalFunc.And ? "All of the following:" : "At least one of the following:")}</span>
+      <span className="ml-4 font-semibold text-lg">
+        {op === LogicalFunc.And ? "All of the following:" : "At least one of the following:"}
+      </span>
       <div>{expr.args.map((subExp, index) => renderExpEditor(subExp as Expr, onSubExpressionUpdate(index)))}</div>
-      <button onClick={addJunction} className="btn-primary text-md font-semibold mt-4">New condition</button>
-      <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">New logic group</button>
+      <button onClick={addJunction} className="btn-primary text-md font-semibold mt-4">
+        New condition
+      </button>
+      <button onClick={addSubJunction} className="btn-primary text-md font-semibold mt-4 ml-2">
+        New logical group
+      </button>
     </div>
   );
 };
@@ -184,8 +189,12 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
           {renderExpEditor(subExp as Expr, onSubExpressionUpdate(index))}
         </div>
       ))}
-      <button onClick={addJunction} className="btn-primary text-sm font-normal mt-4">New condition</button>
-      <button onClick={addSubJunction} className="btn-primary text-sm font-normal mt-4 ml-2">New logic group</button>
+      <button onClick={addJunction} className="btn-primary text-sm font-normal mt-4">
+        New condition
+      </button>
+      <button onClick={addSubJunction} className="btn-primary text-sm font-normal mt-4 ml-2">
+        New logic group
+      </button>
     </div>
   );
 };
@@ -210,12 +219,19 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
         const submodel = ruleStore.getSchema(attr.subtype!);
         return { args: [arg, expressionFromSource(ruleStore, submodel)], op: CollectionFunc.AnyOf };
       })();
+    case AttributeType.Enum:
+      return { args: [arg, attr.enumSet![0]], op: NumberFunc.Equal };
+    default:
+      return simpleExpressionForType(attr.type, arg);
+  }
+};
+
+const simpleExpressionForType = (type: AttributeType, arg: Expression): Expr => {
+  switch (type) {
     case AttributeType.Date:
       return { args: [arg, Date.now()], op: DateFunc.IsAfter };
     case AttributeType.Number:
       return { args: [arg, 0], op: NumberFunc.Equal };
-    case AttributeType.Enum:
-      return { args: [arg, attr.enumSet![0]], op: NumberFunc.Equal };
     case AttributeType.Boolean:
       return { args: [arg], op: BooleanFunc.IsChecked };
     case AttributeType.Optional:
@@ -225,7 +241,7 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
   }
 };
 
-const renderExpEditor = (e: Expr, exprUpdateHandler: (_: Expr) => void) => {
+const renderExpEditor = (e: Expr, exprUpdateHandler: (_: Expr) => void): JSX.Element => {
   switch (e.op) {
     case ModelFunc.Lookup:
       return <LookUpExpBuilder exp={e} exprUpdateHandler={exprUpdateHandler} />;
@@ -291,18 +307,26 @@ const LookUpExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
 };
 
 const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
-  const options = [CollectionFunc.AllOf, CollectionFunc.AnyOf, CollectionFunc.NoneOf, CollectionFunc.NumberOf];
+  const options = [
+    CollectionFunc.AllOf,
+    CollectionFunc.AnyOf,
+    CollectionFunc.NoneOf,
+    CollectionFunc.NumberOf,
+    CollectionFunc.Size,
+  ];
   const { args, op } = exp;
+  const [left, right] = args;
   const opUpdateHandler = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       const newOp = e.currentTarget.value as FuncType;
-      if (newOp !== op) {
-        // TODO: generate new expression
-        if (newOp === CollectionFunc.NumberOf) {
-          //
-        } else {
-          //
-        }
+      if (newOp === CollectionFunc.Size) {
+        // if op is Size, lhs should be still be a collection, other args disposed
+        const newArgs = [args[0]] as Expression[];
+        const overall = simpleExpressionForType(AttributeType.Number, { args: newArgs, op: newOp });
+        return exprUpdateHandler(overall);
+      } else if (newOp === CollectionFunc.NumberOf) {
+        const overall = simpleExpressionForType(AttributeType.Number, { ...exp, op: newOp });
+        return exprUpdateHandler(overall);
       }
       exprUpdateHandler({ ...exp, op: newOp });
     }
@@ -312,10 +336,28 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     exprUpdateHandler(e);
   };
   const onRightSubExpUpdate = (e: Expr) => {
-    const newArgs = [e, args[1]];
-    exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
+    const newArgs = [e, args[1]] as Expression[];
+    exprUpdateHandler({ ...exp, args: newArgs });
   };
-  const [left, right] = args;
+
+  const attrSpace = useContext(RuleContext).input.attributes;
+  const ruleStore = useContext(RuleStoreContext);
+  const getSubExpBuilder = (e: Expr) => {
+    // WARN Naive non-recursive lookup, to revise if able
+    const lookupExp = exp.args[0] as Expr;
+    const groupAttrLabel = lookupExp.args[0];
+    const subSchemaName = attrSpace.find((attr) => attr.label === groupAttrLabel)!.subtype!;
+    const subSchema = ruleStore.getSchema(subSchemaName);
+    const ctx = { ...blankRule(), input: subSchema };
+    // TODO: discuss if rhs SHOULD BE a boolean operation (easier to reuse components + customizability)
+    // FIXME: display subschema in subrenderer (object cannot be child error)
+    return (
+      <RuleContext.Provider value={ctx}>
+        {/* <CollectionSubExpBuilder exprUpdateHandler={onRightSubExpUpdate} exp={e} />; */}
+        {renderExpEditor(e, exprUpdateHandler)}
+      </RuleContext.Provider>
+    );
+  };
   return (
     <div>
       {renderExpEditor(left as Expr, onLeftSubExpUpdate)}
@@ -324,7 +366,17 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
           <option value={option}>{option}</option>
         ))}
       </select>
-      {!!right && renderExpEditor(right as Expr, onRightSubExpUpdate)}
+      {isExpr(right as Expr) && getSubExpBuilder(right as Expr)}
+    </div>
+  );
+};
+
+const CollectionSubExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
+  const rule = useContext(RuleContext);
+  return (
+    <div>
+      {rule.input}
+      {renderExpEditor(exp, exprUpdateHandler)}
     </div>
   );
 };
@@ -418,11 +470,11 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
   const options = [EnumFunc.Is, EnumFunc.IsNot];
   const attrSpace = useContext(RuleContext).input.attributes; // TODO: lookup return value of subexpression
 
-  // Naive non-recursive lookup, to revise if able 
-  const exprModel = exp.args[0] as Expr
-  const exprAttributeName = exprModel.args[0]
-  const enumSpace = attrSpace.find((attr) => attr.label === exprAttributeName)!.enumSet!
-  
+  // Naive non-recursive lookup, to revise if able
+  const exprModel = exp.args[0] as Expr;
+  const exprAttributeName = exprModel.args[0];
+  const enumSpace = attrSpace.find((attr) => attr.label === exprAttributeName)!.enumSet!;
+
   const { args, op } = exp;
   const opUpdateHandler = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
@@ -474,6 +526,7 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
   };
 
   const [param] = args;
+  console.log("ischecked", param);
   return (
     <div className="mt-2">
       {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
@@ -487,7 +540,7 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
 };
 
 const isExpr = (e: Expression): e is Expr => {
-  return typeof e === "object";
+  return typeof e === "object" && "op" in e;
 };
 
 const toPlainEnglish = (option: FuncType ) => {
