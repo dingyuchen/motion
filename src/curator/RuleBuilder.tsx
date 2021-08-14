@@ -1,4 +1,3 @@
-import { render } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 import {
   Attribute,
@@ -12,7 +11,6 @@ import {
   ModelFunc,
   NumberFunc,
   OptionalFunc,
-  Value,
 } from "../../motion-bee/lib/types";
 import { RuleStoreContext } from "../app";
 import { RuleStore, StoreHandler } from "../shared/RuleStore";
@@ -28,11 +26,12 @@ export const RuleBuilder = ({
   index: number;
   ruleUpdateHandler: (_: Rule) => void;
 }) => {
-  const schemata = useContext(RuleStoreContext).getSchemata;
+  const ruleStore = useContext(RuleStoreContext);
+  const schemata = ruleStore.getSchemata;
   const updateInputSchema = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
-      const input = schemata.filter((schema) => schema.name === schemaName)[0];
+      const input = ruleStore.getSchema(schemaName);
       ruleUpdateHandler({ ...rule, input });
     }
   };
@@ -44,9 +43,9 @@ export const RuleBuilder = ({
     <div className="card border-2 w-11/12">
       <h1>{index + 1}</h1>
       Model selection
-      <select onChange={updateInputSchema}>
+      <select onChange={updateInputSchema} value={rule.input.name}>
         {schemata.map((schema) => (
-          <option>{schema.name}</option>
+          <option value={schema.name}>{schema.name}</option>
         ))}
       </select>
       <JunctionExpressionBuilder rule={rule} exprUpdateHandler={expressionUpdateHandler} />
@@ -61,19 +60,21 @@ const JunctionExpressionBuilder = ({
   rule: Rule;
   exprUpdateHandler: (_: Expression) => void;
 }) => {
-  const [junctionOperation, setJunctionOperation] = useState(LogicalFunc.And);
   const ruleStore = useContext(RuleStoreContext);
-  const { expr, input } = rule;
+  const { input } = rule;
+  const expr = rule.expr as Expr;
+  const { op } = expr;
+
   const junctionUpdateHandler = (e: Event) => {
     if (e.currentTarget instanceof HTMLSelectElement) {
-      const junction = e.currentTarget.value;
-      setJunctionOperation(junction as LogicalFunc);
+      const junction = e.currentTarget.value as LogicalFunc;
+      exprUpdateHandler({ ...expr, op: junction });
     }
   };
   const onSubExpressionUpdate = (index: number) => (exp: Expression) => {
     if (isExpr(expr)) {
       const newExprs = immutableReplace(expr.args as Expression[], index, exp);
-      exprUpdateHandler({ op: junctionOperation, args: newExprs });
+      exprUpdateHandler({ ...expr, args: newExprs });
     }
   };
 
@@ -81,7 +82,7 @@ const JunctionExpressionBuilder = ({
     if (isExpr(expr)) {
       const args = expr.args as Expression[];
       const defaultExpression = expressionFromSource(ruleStore, input);
-      exprUpdateHandler({ op: junctionOperation, args: args.concat(defaultExpression) });
+      exprUpdateHandler({ ...expr, args: args.concat(defaultExpression) });
     }
   };
 
@@ -89,50 +90,14 @@ const JunctionExpressionBuilder = ({
   return (
     <div>
       {(expr as Expr).args.length > 1 && (
-        <select onChange={junctionUpdateHandler} value={junctionOperation}>
-          {options.map((opt) => (
-            <option>{opt}</option>
+        <select onChange={junctionUpdateHandler} value={op}>
+          {options.map((option) => (
+            <option value={op}>{option}</option>
           ))}
         </select>
       )}
-      {(expr as Expr).args.map((subExp, index) => renderContinuation(subExp, onSubExpressionUpdate(index)))}
+      {(expr as Expr).args.map((subExp, index) => renderContinuation(subExp as Expr, onSubExpressionUpdate(index)))}
       <button onClick={addJunction}>More</button>
-    </div>
-  );
-};
-
-const SchemaLookUpBuilder = ({
-  exprUpdateHandler,
-  schema,
-}: {
-  exprUpdateHandler: (_: Expr) => void;
-  schema: Schema;
-}) => {
-  const [workingAttr, setWorkingAttr] = useState(schema.attributes[0]);
-  const onSelectAttribute = ({ currentTarget }: { currentTarget: EventTarget }) => {
-    if (currentTarget instanceof HTMLSelectElement) {
-      const attr = schema.attributes.filter((attr) => attr.label === currentTarget.value)[0];
-      setWorkingAttr(attr);
-    }
-  };
-  const nextExpUpdateHandler = (e: Expr) => {
-    const { args } = e;
-    const self: Expr = { args: [workingAttr.label], op: ModelFunc.Lookup };
-    const newExpr = { ...e, args: [self, ...args] };
-    exprUpdateHandler(newExpr as Expr);
-  };
-  const furtherLookUpHandler = (e: Expression) => {
-    const self: Expr = { args: [workingAttr.label, e], op: ModelFunc.Lookup };
-    exprUpdateHandler(self);
-  };
-  return (
-    <div>
-      <select name="attribute" onChange={onSelectAttribute} value={workingAttr.label}>
-        {schema.attributes.map((attr) => (
-          <option value={attr.label}>{attr.label}</option>
-        ))}
-      </select>
-      {renderContinuation(workingAttr, nextExpUpdateHandler)}
     </div>
   );
 };
@@ -152,7 +117,6 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
       const defAttribute = submodel.attributes[0];
       const { label } = defAttribute;
       const lookup = { args: [label, arg], op: ModelFunc.Lookup };
-      console.log(lookup);
       return expressionForType(ruleStore, defAttribute, lookup);
     case AttributeType.Collection:
       return (() => {
@@ -175,24 +139,9 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
 };
 
 const renderContinuation = (e: Expr, nextExpUpdateHandler: (_: Expr) => void) => {
-  switch (attribute.type) {
-    case AttributeType.Model:
-      const schema = schemaSpace.filter((s) => s.name === attribute.subtype)[0];
-      return <SchemaLookUpBuilder exprUpdateHandler={nextExpUpdateHandler} schema={schema} />;
-    case AttributeType.Collection:
-      return <CollectionExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
-    case AttributeType.Date:
-      return <DateExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
-    case AttributeType.Number:
-      return <NumberExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
-    case AttributeType.Enum:
-      return <EnumExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
-    case AttributeType.Boolean:
-      return <NegationExpBuilder exprUpdateHandler={nextExpUpdateHandler} />;
-    case AttributeType.Optional:
-    // not supported currently
+  switch (e.op) {
     default:
-      break;
+      return <div>{JSON.stringify(e)}</div>;
   }
 };
 
