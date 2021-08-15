@@ -31,7 +31,7 @@ export interface Rule {
 
 export const blankExpression = (): Expr => ({
   args: [],
-  op: LogicalFunc.Or,
+  op: LogicalFunc.And,
 });
 
 export const blankRuleSet = (): RuleSet => ({

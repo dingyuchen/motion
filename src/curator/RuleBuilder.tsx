@@ -38,7 +38,9 @@ export const RuleBuilder = ({
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
       const input = ruleStore.getSchema(schemaName);
-      ruleUpdateHandler({ input, expr: expressionFromSource(ruleStore, input) });
+      const defaultExpr = expressionFromSource(ruleStore, input);
+      const juncWrapped = { ...blankExpression(), args: [defaultExpr] };
+      ruleUpdateHandler({ input, expr: juncWrapped });
     }
   };
   const expressionUpdateHandler = (expr: Expression) => {
@@ -526,7 +528,6 @@ const BoolExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
   };
 
   const [param] = args;
-  // console.log("ischecked", param);
   return (
     <div className="mt-2">
       {renderExpEditor(param as Expr, onLeftSubExpUpdate)}
