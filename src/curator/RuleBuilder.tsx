@@ -182,7 +182,7 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
       {expr.args.length > 1 && (
         <select onChange={junctionUpdateHandler} value={op} className="text-xl font-semibold">
           {options.map((option) => (
-            <option value={op}>{option}</option>
+            <option value={option}>{option}</option>
           ))}
         </select>
       )}
