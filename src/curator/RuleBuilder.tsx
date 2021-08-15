@@ -336,7 +336,7 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     exprUpdateHandler(e);
   };
   const onRightSubExpUpdate = (e: Expr) => {
-    const newArgs = [e, args[1]] as Expression[];
+    const newArgs = [args[0], e] as Expression[];
     exprUpdateHandler({ ...exp, args: newArgs });
   };
 
@@ -346,7 +346,6 @@ const CollectionExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdat
     // WARN Naive non-recursive lookup, to revise if able
     const lookupExp = exp.args[0] as Expr;
     const groupAttrLabel = lookupExp.args[0];
-    
     const subSchemaName = attrSpace.find((attr) => attr.label === groupAttrLabel)!.subtype!;
     const subSchema = ruleStore.getSchema(subSchemaName);
     const ctx = { ...blankRule(), input: subSchema };
@@ -544,29 +543,44 @@ const isExpr = (e: Expression): e is Expr => {
   return typeof e === "object" && "op" in e;
 };
 
-const toPlainEnglish = (option: FuncType ) => {
+const toPlainEnglish = (option: FuncType) => {
   switch (option) {
     case ModelFunc.Lookup:
-    case NumberFunc.Equal: return "Equals"
-    case NumberFunc.LessThan: return "Is less than"
-    case NumberFunc.LessThanOrEqual: return "Is less than or equal to"
-    case NumberFunc.MoreThan: return "Is more than"
-    case NumberFunc.MoreThanOrEqual: return "Is more than or equal to"
-    case CollectionFunc.AllOf: 
+    case NumberFunc.Equal:
+      return "Equals";
+    case NumberFunc.LessThan:
+      return "Is less than";
+    case NumberFunc.LessThanOrEqual:
+      return "Is less than or equal to";
+    case NumberFunc.MoreThan:
+      return "Is more than";
+    case NumberFunc.MoreThanOrEqual:
+      return "Is more than or equal to";
+    case CollectionFunc.AllOf:
     case CollectionFunc.AnyOf:
     case CollectionFunc.NoneOf:
     case CollectionFunc.NumberOf:
-    case CollectionFunc.Size: return "Size"
-    case DateFunc.IsAfter: return "Is after"
-    case DateFunc.IsBefore: return "Is before"
-    case DateFunc.IsBetween: return "Is between"
-    case EnumFunc.Is: return "Is"
-    case EnumFunc.IsNot: return "Is not"
-    case BooleanFunc.IsChecked: return "Is true"
-    case BooleanFunc.IsNotChecked: return "Is not true"
-    case OptionalFunc.Exists: return "Exists"
-    case OptionalFunc.ExistsAnd: return "Exists and"
+    case CollectionFunc.Size:
+      return "Size";
+    case DateFunc.IsAfter:
+      return "Is after";
+    case DateFunc.IsBefore:
+      return "Is before";
+    case DateFunc.IsBetween:
+      return "Is between";
+    case EnumFunc.Is:
+      return "Is";
+    case EnumFunc.IsNot:
+      return "Is not";
+    case BooleanFunc.IsChecked:
+      return "Is true";
+    case BooleanFunc.IsNotChecked:
+      return "Is not true";
+    case OptionalFunc.Exists:
+      return "Exists";
+    case OptionalFunc.ExistsAnd:
+      return "Exists and";
     default:
-      return option
+      return option;
   }
 };
