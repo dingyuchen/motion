@@ -89,7 +89,7 @@ export function ConsumerEdit({
       </div>
       <div className="mt-12 flex justify-center">
         {outcomes.length > 0 ? (
-          outcomes.every((o) => o === true) ? (
+          !!outcomes.find((o) => o) ? (
             <span className="text-green-600 font-semibold">PERMITTED</span>
           ) : (
             <span className="text-red-600 font-semibold">NOT PERMITTED</span>
