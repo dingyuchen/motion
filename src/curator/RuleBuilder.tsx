@@ -222,7 +222,7 @@ const expressionForType = (ruleStore: StoreHandler, attr: AttributeDefinition, a
         return { args: [arg, expressionFromSource(ruleStore, submodel)], op: CollectionFunc.AnyOf };
       })();
     case AttributeType.Enum:
-      return { args: [arg, attr.enumSet![0]], op: NumberFunc.Equal };
+      return { args: [arg, attr.enumSet![0]], op: EnumFunc.Is };
     default:
       return simpleExpressionForType(attr.type, arg);
   }
