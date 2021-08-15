@@ -38,9 +38,9 @@ export const RuleBuilder = ({
     if (e.currentTarget instanceof HTMLSelectElement) {
       const schemaName = e.currentTarget.value;
       const input = ruleStore.getSchema(schemaName);
-      const defaultExpr = expressionFromSource(ruleStore, input);
-      const juncWrapped = { ...blankExpression(), args: [defaultExpr] };
-      ruleUpdateHandler({ input, expr: juncWrapped });
+      // const defaultExpr = expressionFromSource(ruleStore, input);
+      // const juncWrapped = { ...blankExpression(), args: [defaultExpr] };
+      ruleUpdateHandler({ input, expr: blankExpression() });
     }
   };
   const expressionUpdateHandler = (expr: Expression) => {
@@ -200,6 +200,7 @@ const LogicalExpBuilder = ({ expr, exprUpdateHandler }: { expr: Expr; exprUpdate
     </div>
   );
 };
+
 const expressionFromSource = (ruleStore: StoreHandler, input: Schema): Expr => {
   const defAttribute = input.attributes[0]; // TODO: do not allow schema with no attributes
   const { label } = defAttribute;
