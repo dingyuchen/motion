@@ -1,6 +1,6 @@
 import { AttributeType } from "../../motion-bee/lib/types";
 import { RuleSet, Schema } from "./types";
-import { miceRuleset, dineInRuleset } from "./schemaHelper";
+import { miceRuleset } from "./schemaHelper";
 
 export interface RuleStore {
   schemata: Schema[];
@@ -194,5 +194,5 @@ export const blankRuleStore = (): RuleStore => ({
       ],
     },
   ],
-  ruleSets: [dineInRuleset, miceRuleset, dineInRuleSetNew as RuleSet],
+  ruleSets: [miceRuleset, dineInRuleSetNew as RuleSet],
 });
