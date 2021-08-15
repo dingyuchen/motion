@@ -21,7 +21,7 @@ export function App() {
       case View.Curator:
         return <Curator />;
       case View.Consumer:
-        return <Consumer store={storeHandler} />;
+        return <Consumer />;
     }
   };
 
