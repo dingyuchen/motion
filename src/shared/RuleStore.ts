@@ -113,7 +113,6 @@ const dineInRuleSetNew = {
     },
     {
       input: {
-        index: 1,
         name: "Dine-In",
         attributes: [
           { label: "F&B Establishment ", type: 3 },
@@ -132,7 +131,7 @@ const dineInRuleSetNew = {
               { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
               { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Coffee Shop"], op: "Is" },
             ],
-            op: "And",
+            op: "Or",
           },
         ],
         op: "And",
