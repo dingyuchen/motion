@@ -54,94 +54,94 @@ const dineInRuleSetNew = {
   rules: [
     {
       input: {
+        index: 1,
         name: "Dine-In",
         attributes: [
           { label: "F&B Establishment ", type: 3 },
           { label: "Number Of Person", type: 1 },
-          { label: "Adult Fully Vaccinated", type: 3 },
-          { label: "Children Same Household", type: 3 },
+          { label: "Adults", type: 4, subtype: "Person" },
+          { label: "Children", type: 4, subtype: "Person" },
           { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
-          { label: "Date", type: 0 },
+          { label: "Children Same Household", type: 3 },
         ],
       },
       expr: {
         args: [
+          {
+            args: [
+              { args: ["Adults"], op: "Lookup" },
+              { args: [{ args: ["Is fully vaccinated"], op: "Lookup" }], op: "IsChecked" },
+            ],
+            op: "AllOf",
+          },
+          { args: [{ args: [{ args: ["Children"], op: "Lookup" }], op: "Size" }, 0], op: "Equal" },
           { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Restaurant"], op: "Is" },
           { args: [{ args: ["Number Of Person"], op: "Lookup" }, 5], op: "LessThanOrEqual" },
-          { args: [{ args: ["Adult Fully Vaccinated"], op: "Lookup" }], op: "IsChecked" },
+        ],
+        op: "And",
+      },
+    },
+    {
+      input: {
+        name: "Dine-In",
+        attributes: [
+          { label: "F&B Establishment ", type: 3 },
+          { label: "Number Of Person", type: 1 },
+          { label: "Adults", type: 4, subtype: "Person" },
+          { label: "Children", type: 4, subtype: "Person" },
+          { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
+          { label: "Children Same Household", type: 3 },
+        ],
+      },
+      expr: {
+        args: [
+          {
+            args: [
+              { args: ["Adults"], op: "Lookup" },
+              { args: [{ args: ["Is fully vaccinated"], op: "Lookup" }], op: "IsChecked" },
+            ],
+            op: "AllOf",
+          },
+          { args: [{ args: [{ args: ["Children"], op: "Lookup" }], op: "Size" }, 5], op: "LessThanOrEqual" },
+          { args: [{ args: [{ args: ["Adults"], op: "Lookup" }], op: "Size" }, 5], op: "LessThanOrEqual" },
+          { args: [{ args: ["Number Of Person"], op: "Lookup" }, 5], op: "LessThanOrEqual" },
           { args: [{ args: ["Children Same Household"], op: "Lookup" }], op: "IsChecked" },
-          { args: [{ args: ["Date"], op: "Lookup" }, 1628995954748], op: "IsAfter" },
-        ],
-        op: "And",
-      },
-    },
-    {
-      input: {
-        name: "Dine-In",
-        attributes: [
-          { label: "F&B Establishment ", type: 3 },
-          { label: "Number Of Person", type: 1 },
-          { label: "Adult Fully Vaccinated", type: 3 },
-          { label: "Children Same Household", type: 3 },
-          { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
-          { label: "Date", type: 0 },
-        ],
-      },
-      expr: {
-        args: [
-          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
-          { args: [{ args: ["Number Of Person"], op: "Lookup" }, 2], op: "Equal" },
-          { args: [{ args: ["Date"], op: "Lookup" }, 1628996132358], op: "IsAfter" },
-        ],
-        op: "And",
-      },
-    },
-    {
-      input: {
-        name: "Dine-In",
-        attributes: [
-          { label: "F&B Establishment ", type: 3 },
-          { label: "Number Of Person", type: 1 },
-          { label: "Adult Fully Vaccinated", type: 3 },
-          { label: "Children Same Household", type: 3 },
-          { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
-          { label: "Date", type: 0 },
-        ],
-      },
-      expr: {
-        args: [
-          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Coffee Shop"], op: "Is" },
-          { args: [{ args: ["Number Of Person"], op: "Lookup" }, 2], op: "Equal" },
-          { args: [{ args: ["Date"], op: "Lookup" }, 1628996165878], op: "IsAfter" },
-        ],
-        op: "And",
-      },
-    },
-    {
-      input: {
-        name: "Dine-In",
-        attributes: [
-          { label: "F&B Establishment ", type: 3 },
-          { label: "Number Of Person", type: 1 },
-          { label: "Adult Fully Vaccinated", type: 3 },
-          { label: "Children Same Household", type: 3 },
-          { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
-          { label: "Date", type: 0 },
-        ],
-      },
-      expr: {
-        args: [
           { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Restaurant"], op: "Is" },
-          { args: [{ args: ["Number Of Person"], op: "Lookup" }, 5], op: "LessThanOrEqual" },
-          { args: [{ args: ["Adult Fully Vaccinated"], op: "Lookup" }], op: "IsChecked" },
-          { args: [{ args: ["Date"], op: "Lookup" }, 1628996182919], op: "IsAfter" },
+        ],
+        op: "And",
+      },
+    },
+    {
+      input: {
+        index: 1,
+        name: "Dine-In",
+        attributes: [
+          { label: "F&B Establishment ", type: 3 },
+          { label: "Number Of Person", type: 1 },
+          { label: "Adults", type: 4, subtype: "Person" },
+          { label: "Children", type: 4, subtype: "Person" },
+          { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
+          { label: "Children Same Household", type: 3 },
+        ],
+      },
+      expr: {
+        args: [
+          { args: [{ args: ["Number Of Person"], op: "Lookup" }, 2], op: "LessThanOrEqual" },
+          {
+            args: [
+              { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
+              { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Coffee Shop"], op: "Is" },
+            ],
+            op: "And",
+          },
         ],
         op: "And",
       },
     },
   ],
-  title: "Dine In (Effective 10 August)",
+  title: "Dine In",
 };
+
 export const blankRuleStore = (): RuleStore => ({
   schemata: [
     {
@@ -156,10 +156,10 @@ export const blankRuleStore = (): RuleStore => ({
       attributes: [
         { label: "F&B Establishment ", type: 3 },
         { label: "Number Of Person", type: 1 },
-        { label: "Adult Fully Vaccinated", type: 3 },
-        { label: "Children Same Household", type: 3 },
+        { label: "Adults", type: 4, subtype: "Person" },
+        { label: "Children", type: 4, subtype: "Person" },
         { label: "Type of F&B Establishment", type: 2, enumSet: ["Hawker Centre", "Coffee Shop", "Restaurant"] },
-        { label: "Date", type: 0 },
+        { label: "Children Same Household", type: 3 },
       ],
     },
     {
