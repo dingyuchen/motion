@@ -471,7 +471,7 @@ const NumberExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHan
 
 const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandler: (_: Expr) => void }) => {
   const options = [EnumFunc.Is, EnumFunc.IsNot];
-  const attrSpace = useContext(RuleContext).input.attributes; // TODO: lookup return value of subexpression
+  const attrSpace = useContext(RuleContext).input.attributes;
 
   // Naive non-recursive lookup, to revise if able
   const exprModel = exp.args[0] as Expr;
@@ -490,8 +490,8 @@ const EnumExpBuilder = ({ exprUpdateHandler, exp }: { exp: Expr; exprUpdateHandl
   };
 
   const onRightSubExpUpdate = (e: Event) => {
-    if (e.currentTarget instanceof HTMLInputElement) {
-      const rhs = JSON.parse(e.currentTarget.value);
+    if (e.currentTarget instanceof HTMLSelectElement) {
+      const rhs = e.currentTarget.value;
       const newArgs = [args[0], rhs];
       exprUpdateHandler({ ...exp, args: newArgs as Expression[] });
     }
