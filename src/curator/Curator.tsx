@@ -1,15 +1,17 @@
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { StoreHandler } from "../shared/RuleStore";
 import { SchemaEditor } from "./SchemaEditor";
 import { RuleSetEditor } from "./RuleSetEditor";
+import { RuleStoreContext } from "../app";
 
 enum View {
   Schema = "schema",
   RuleSet = "ruleset",
 }
 
-export const Curator = ({ store }: { store: StoreHandler }) => {
+export const Curator = () => {
   const [view, setView] = useState(View.Schema);
+  const store = useContext(RuleStoreContext);
 
   const showComponent = (viewMode: View) => {
     switch (viewMode) {

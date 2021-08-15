@@ -19,7 +19,7 @@ export function App() {
   const showComponent = (viewMode: View) => {
     switch (viewMode) {
       case View.Curator:
-        return <Curator store={storeHandler} />;
+        return <Curator />;
       case View.Consumer:
         return <Consumer store={storeHandler} />;
     }
