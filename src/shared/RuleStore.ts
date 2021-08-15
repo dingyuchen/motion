@@ -113,14 +113,12 @@ const dineInRuleSetNew = {
           { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
           { args: [{ args: ["Number Of Person"], op: "Lookup" }, 2], op: "Equal" },
           { args: [{ args: ["Date"], op: "Lookup" }, 1628996165878], op: "IsAfter" },
-          { args: [{ args: ["Date"], op: "Lookup" }, 1628996164096], op: "IsAfter" },
         ],
         op: "And",
       },
     },
     {
       input: {
-        index: 3,
         name: "Dine-In",
         attributes: [
           { label: "F&B Establishment ", type: 3 },
