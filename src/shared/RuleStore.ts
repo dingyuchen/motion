@@ -66,7 +66,7 @@ const dineInRuleSetNew = {
       },
       expr: {
         args: [
-          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
+          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Restaurant"], op: "Is" },
           { args: [{ args: ["Number Of Person"], op: "Lookup" }, 5], op: "LessThanOrEqual" },
           { args: [{ args: ["Adult Fully Vaccinated"], op: "Lookup" }], op: "IsChecked" },
           { args: [{ args: ["Children Same Household"], op: "Lookup" }], op: "IsChecked" },
@@ -110,7 +110,7 @@ const dineInRuleSetNew = {
       },
       expr: {
         args: [
-          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
+          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Coffee Shop"], op: "Is" },
           { args: [{ args: ["Number Of Person"], op: "Lookup" }, 2], op: "Equal" },
           { args: [{ args: ["Date"], op: "Lookup" }, 1628996165878], op: "IsAfter" },
         ],
@@ -131,7 +131,7 @@ const dineInRuleSetNew = {
       },
       expr: {
         args: [
-          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Hawker Centre"], op: "Is" },
+          { args: [{ args: ["Type of F&B Establishment"], op: "Lookup" }, "Restaurant"], op: "Is" },
           { args: [{ args: ["Number Of Person"], op: "Lookup" }, 5], op: "LessThanOrEqual" },
           { args: [{ args: ["Adult Fully Vaccinated"], op: "Lookup" }], op: "IsChecked" },
           { args: [{ args: ["Date"], op: "Lookup" }, 1628996182919], op: "IsAfter" },
